@@ -1,0 +1,128 @@
+// scrolly.js — scroll-driven storytelling. As each step card enters the viewport,
+// fly the camera, toggle the right overlay, and swap the legend. Overlapping flyTo
+// calls from fast scrolling are collapsed to the latest target via an isFlying guard.
+
+export function initScrolly(map, sections, opts = {}) {
+  const legendEl = opts.legendEl || document.getElementById('legend');
+  const legendWrap = opts.legendWrap || document.getElementById('legend-panel');
+
+  const byId = new Map(sections.map((s) => [s.id, s]));
+  const modules = [
+    ...new Set(sections.map((s) => s.layerConfig && s.layerConfig.module).filter(Boolean)),
+  ];
+
+  let activeId = null;
+  let desired = null;    // latest requested section
+  let flownId = null;    // section we last launched a flyTo toward
+  let isFlying = false;
+
+  function hideAllOverlays() {
+    modules.forEach((m) => m.setVisible(map, false));
+  }
+
+  function applyLayers(section) {
+    hideAllOverlays();
+    if (section.layerConfig && section.layerConfig.module) {
+      section.layerConfig.module.setVisible(map, true);
+    }
+  }
+
+  function updateLegend(section) {
+    if (!legendEl) return;
+    if (section.legendHTML) {
+      legendEl.innerHTML = section.legendHTML;
+      if (legendWrap) legendWrap.hidden = false;
+    } else if (legendWrap) {
+      legendWrap.hidden = true;
+      legendEl.innerHTML = '';
+    }
+  }
+
+  function scheduleFly() {
+    if (isFlying || !desired) return;      // in-flight → handled on moveend
+    const s = desired;
+    flownId = s.id;
+    isFlying = true;
+    const cur = map.getCenter();
+    const size = map.getSize();
+    const [lat, lng] = s.camera.center;
+    // Guards: (a) an identical start/target centre makes Leaflet's flyTo divide by zero
+    // (NaN LatLng); (b) a zero-size / not-yet-laid-out map yields NaN in the animation.
+    // In either case jump instantly instead of animating.
+    const sameCentre = Math.abs(cur.lat - lat) < 1e-6 && Math.abs(cur.lng - lng) < 1e-6;
+    const notReady = !size || size.x === 0 || size.y === 0 || !Number.isFinite(cur.lat) || !Number.isFinite(cur.lng);
+    if (sameCentre || notReady) {
+      map.setView(s.camera.center, s.camera.zoom, { animate: false });
+    } else {
+      map.flyTo(s.camera.center, s.camera.zoom, {
+        duration: s.camera.duration || 2,
+        easeLinearity: 0.25,
+      });
+    }
+  }
+
+  map.on('moveend', () => {
+    if (!isFlying) return;
+    isFlying = false;
+    if (desired && desired.id !== flownId) scheduleFly(); // a newer target arrived mid-flight
+  });
+
+  function activate(section) {
+    if (!section || section.id === activeId) return;
+    activeId = section.id;
+    desired = section;
+    applyLayers(section);
+    updateLegend(section);
+    document.querySelectorAll('.step').forEach((el) => {
+      el.classList.toggle('is-active', el.dataset.id === section.id);
+    });
+    scheduleFly();
+  }
+
+  // Observe step cards; activate the one nearest the middle of the viewport.
+  const steps = Array.from(document.querySelectorAll('.step'));
+  const visibility = new Map();
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => visibility.set(e.target.dataset.id, e.intersectionRatio));
+      let bestId = null;
+      let best = 0;
+      visibility.forEach((ratio, id) => {
+        if (ratio > best) { best = ratio; bestId = id; }
+      });
+      if (bestId) activate(byId.get(bestId));
+    },
+    { root: null, threshold: [0, 0.25, 0.5, 0.75, 1], rootMargin: '-35% 0px -35% 0px' }
+  );
+  steps.forEach((s) => io.observe(s));
+
+  // Graceful degradation: if the active overlay's source errors, note it in the legend.
+  if (opts.onLayerError) {
+    opts.onLayerError(({ sourceId }) => {
+      const section = byId.get(activeId);
+      if (section && section.layerConfig && section.layerConfig.sourceId === sourceId && legendEl) {
+        if (!legendEl.querySelector('.legend-unavailable')) {
+          const p = document.createElement('p');
+          p.className = 'legend-unavailable';
+          p.textContent = 'This layer could not load — showing basemap only.';
+          legendEl.appendChild(p);
+        }
+      }
+    });
+  }
+
+  // Activate the first section immediately (in case it's already in view on load).
+  if (sections.length) activate(sections[0]);
+
+  // Jump straight to a section without scroll animation (deep-linking / programmatic).
+  function jumpTo(id) {
+    const s = byId.get(id);
+    if (!s) return;
+    activeId = null; // force re-activation
+    activate(s);
+    isFlying = false;
+    map.setView(s.camera.center, s.camera.zoom, { animate: false });
+  }
+
+  return { activate, jumpTo };
+}

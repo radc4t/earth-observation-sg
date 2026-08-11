@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Singapore from Space — Earth Observation, made visible</title>
+  <meta name="description" content="A scrolling data story showing what Singapore looks like from Earth-observation satellites — green cover, urban heat, and maritime traffic — and why the data matters." />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+  <!-- Fixed map canvas behind the scrolling narrative -->
+  <div id="map" aria-label="Interactive satellite map of Singapore" role="region"></div>
+
+  <!-- Basemap toggle -->
+  <div id="basemap-toggle" class="basemap-toggle" role="radiogroup" aria-label="Satellite basemap"></div>
+
+  <!-- Legend (updates per section) -->
+  <aside id="legend-panel" class="legend-panel" aria-live="polite" hidden>
+    <button id="legend-collapse" class="legend-collapse" type="button" aria-expanded="true" aria-controls="legend">Legend ▾</button>
+    <div id="legend" class="legend"></div>
+  </aside>
+
+  <!-- Scrolling story -->
+  <main class="story">
+    <section class="step step--hero" data-id="hero">
+      <div class="card card--hero">
+        <p class="kicker">Earth Observation · Singapore</p>
+        <h1>Singapore, from space</h1>
+        <p class="lede">Every day, satellites photograph our island in wavelengths the eye can’t see. This is what that data reveals — about our greenery, our heat, and the ships at our doorstep.</p>
+        <div class="scroll-cue" aria-hidden="true"><span>Scroll to explore</span><div class="arrow"></div></div>
+      </div>
+    </section>
+
+    <section class="step" data-id="vegetation">
+      <div class="card">
+        <p class="kicker">01 · Environmental monitoring</p>
+        <h2>How green is Singapore, really?</h2>
+        <p>Satellites measure how strongly the land reflects near-infrared light — healthy plants glow in it. Combined into a Vegetation Index (NDVI), it maps living green cover, from the dense canopy over the Central Catchment and Bukit Timah to the bare ground of a new worksite.</p>
+        <dl class="meta">
+          <div><dt>Who uses it</dt><dd>NParks, environmental agencies, researchers</dd></div>
+          <div><dt>Why it matters</dt><dd>Tracking green-cover change shows where the city is greening — and where tree cover is being lost — guiding reforestation and the “City in Nature” goal.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="step" data-id="heat">
+      <div class="card">
+        <p class="kicker">02 · Climate resilience</p>
+        <h2>The city makes its own heat</h2>
+        <p>Thermal sensors read the temperature of the ground itself. Industrial Jurong and Tuas, and dense built-up estates, store and re-radiate heat — an “urban heat island.” Reservoirs, the Botanic Gardens and the forested centre stay markedly cooler.</p>
+        <dl class="meta">
+          <div><dt>Who uses it</dt><dd>URA, HDB, climate-resilience planners</dd></div>
+          <div><dt>Why it matters</dt><dd>Seeing where heat concentrates tells planners where cooling matters most — shade, greenery, water and building design — as Singapore adapts to a warming climate.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="step" data-id="maritime">
+      <div class="card">
+        <p class="kicker">03 · Maritime activity</p>
+        <h2>One of the world’s busiest waterways</h2>
+        <p>Ships broadcast their position over AIS, and satellites listen from orbit. Plotted together, the vessels trace the shipping lanes of the Singapore Strait — tankers, container ships and bulk carriers threading past the island in a near-constant stream. <em>Tap a vessel to inspect it.</em></p>
+        <dl class="meta">
+          <div><dt>Who uses it</dt><dd>MPA, maritime security, port operations</dd></div>
+          <div><dt>Why it matters</dt><dd>Space-based vessel tracking supports safe navigation, pollution response and maritime security in one of the most heavily trafficked straits on Earth.</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="step step--outro" data-id="outro">
+      <div class="card">
+        <p class="kicker">Earth Observation Initiative</p>
+        <h2>Land, heat, and sea — one island, observed</h2>
+        <p>Green cover, surface heat and maritime traffic are three views of the same place, each read from space. This is the promise of an Earth Observation Initiative: turning satellite data into understanding people can act on. <strong>Public agencies observe the Earth so the public can see it too.</strong></p>
+
+        <details class="about">
+          <summary>About the data</summary>
+          <div class="about-body">
+            <p><strong>Real imagery:</strong> the satellite basemap is genuine, free, public data — <a href="https://s2maps.eu" target="_blank" rel="noopener">EOX Sentinel-2 cloudless</a> (Copernicus Sentinel-2) and <a href="https://www.esri.com" target="_blank" rel="noopener">Esri World Imagery</a>.</p>
+            <p><strong>Illustrative overlays:</strong> the NDVI, thermal and vessel layers on this prototype are <em>designed placeholders</em> that show how each product reads. Each is wired to accept a real raster / AIS feed via a documented one-line swap — see <a href="docs/swap-instructions.md">docs/swap-instructions.md</a>. Real sources: Sentinel-2 (NDVI), Landsat 8/9 thermal band (surface temperature), AIS transponder data (vessels).</p>
+            <p class="credits">Basemaps © EOX IT Services GmbH · © Esri, Maxar, Earthstar Geographics · Contains modified Copernicus Sentinel data. Map rendering by MapLibre GL.</p>
+          </div>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import {
+      createMap, registerBasemapToggle, registerOverlays, onLayerError,
+    } from './js/map.js';
+    import { SECTIONS } from './js/config.js';
+    import { initScrolly } from './js/scrolly.js';
+
+    const map = createMap('map');
+    const modules = [
+      ...new Set(SECTIONS.map((s) => s.layerConfig && s.layerConfig.module).filter(Boolean)),
+    ];
+
+    registerOverlays(map, modules);
+    registerBasemapToggle(map, document.getElementById('basemap-toggle'));
+    // The hero step activates on load and flies from the wide intro framing (zoom 9)
+    // down to the whole island (zoom 11) — a cinematic zoom-in.
+    const story = initScrolly(map, SECTIONS, { onLayerError });
+    // Expose for deep-linking (#section in URL) and debugging.
+    window.__map = map;
+    window.__story = story;
+    if (location.hash) story.jumpTo(location.hash.slice(1));
+
+    // Legend collapse (mobile-friendly)
+    const collapseBtn = document.getElementById('legend-collapse');
+    const legendBody = document.getElementById('legend');
+    collapseBtn.addEventListener('click', () => {
+      const open = legendBody.hasAttribute('hidden');
+      if (open) { legendBody.removeAttribute('hidden'); collapseBtn.setAttribute('aria-expanded', 'true'); collapseBtn.textContent = 'Legend ▾'; }
+      else { legendBody.setAttribute('hidden', ''); collapseBtn.setAttribute('aria-expanded', 'false'); collapseBtn.textContent = 'Legend ▸'; }
+    });
+  </script>
+</body>
+</html>
