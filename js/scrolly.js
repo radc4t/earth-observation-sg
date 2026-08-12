@@ -14,8 +14,8 @@ export function initScrolly(map, sections, opts = {}) {
   ];
 
   let activeId = null;
-  let desired = null;    // latest requested section
-  let flownId = null;    // section we last launched a flyTo toward
+  let desired = null; // latest requested section
+  let flownId = null; // section we last launched a flyTo toward
   let isFlying = false;
 
   function hideAllOverlays() {
@@ -45,7 +45,7 @@ export function initScrolly(map, sections, opts = {}) {
   }
 
   function scheduleFly() {
-    if (isFlying || !desired) return;      // in-flight → handled on moveend
+    if (isFlying || !desired) return; // in-flight → handled on moveend
     const s = desired;
     flownId = s.id;
     isFlying = true;
@@ -56,7 +56,12 @@ export function initScrolly(map, sections, opts = {}) {
     // (NaN LatLng); (b) a zero-size / not-yet-laid-out map yields NaN in the animation;
     // (c) the reader asked for reduced motion. In each case jump instantly, no animation.
     const sameCentre = Math.abs(cur.lat - lat) < 1e-6 && Math.abs(cur.lng - lng) < 1e-6;
-    const notReady = !size || size.x === 0 || size.y === 0 || !Number.isFinite(cur.lat) || !Number.isFinite(cur.lng);
+    const notReady =
+      !size ||
+      size.x === 0 ||
+      size.y === 0 ||
+      !Number.isFinite(cur.lat) ||
+      !Number.isFinite(cur.lng);
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (sameCentre || notReady || reducedMotion) {
       map.setView(s.camera.center, s.camera.zoom, { animate: false });
@@ -97,7 +102,10 @@ export function initScrolly(map, sections, opts = {}) {
       let bestId = null;
       let best = 0;
       visibility.forEach((ratio, id) => {
-        if (ratio > best) { best = ratio; bestId = id; }
+        if (ratio > best) {
+          best = ratio;
+          bestId = id;
+        }
       });
       if (bestId) activate(byId.get(bestId));
     },

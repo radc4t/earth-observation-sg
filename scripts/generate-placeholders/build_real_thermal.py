@@ -23,28 +23,31 @@ The exported PNG is displayed at ~DISPLAY_MPP m/px; it is not a native-100 m tru
 Output: assets/overlays/thermal_real.png  (+ real_thermal_scene.json metadata).
 Requires: rasterio, numpy, Pillow.
 """
-import io
-import os
+
 import json
 import math
-import urllib.request
+import os
 import urllib.parse
+import urllib.request
+
 import numpy as np
-from PIL import Image
 import rasterio
-from rasterio.warp import reproject, Resampling, transform_bounds
-from rasterio.transform import from_bounds
+from PIL import Image
+from ramps import load_ramps
 from rasterio import windows
+from rasterio.transform import from_bounds
+from rasterio.warp import Resampling, reproject, transform_bounds
 
 BBOX = dict(west=103.60, south=1.205, east=104.04, north=1.475)
 BBOX_WIDTH_M = 111320.0 * (BBOX["east"] - BBOX["west"]) * math.cos(math.radians(1.34))
 OUT_W = 1536  # ~32 m/px — matches the 30 m Landsat L2 product grid (no over-upsampling)
 OUT_H = int(round(OUT_W * (BBOX["north"] - BBOX["south"]) / (BBOX["east"] - BBOX["west"])))
 DISPLAY_MPP = BBOX_WIDTH_M / OUT_W
-OUT_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", "assets", "overlays"))
+OUT_DIR = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "assets", "overlays")
+)
 
 # inferno stops from the single source of truth (js/ramps.js) via ramps.py.
-from ramps import load_ramps
 INFERNO_STOPS = load_ramps()["inferno"]
 STAC = "https://planetarycomputer.microsoft.com/api/stac/v1/search"
 SIGN = "https://planetarycomputer.microsoft.com/api/sas/v1/sign?href="
@@ -54,7 +57,7 @@ QA_MASK_BITS = 0b11111
 
 def _hex(h):
     h = h.lstrip("#")
-    return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+    return tuple(int(h[i : i + 2], 16) for i in (0, 2, 4))
 
 
 def build_lut(stops, n=256):
@@ -68,7 +71,9 @@ def build_lut(stops, n=256):
 
 
 def sign(href):
-    return json.load(urllib.request.urlopen(SIGN + urllib.parse.quote(href, safe=""), timeout=60))["href"]
+    return json.load(urllib.request.urlopen(SIGN + urllib.parse.quote(href, safe=""), timeout=60))[
+        "href"
+    ]
 
 
 def find_scene():
@@ -79,16 +84,20 @@ def find_scene():
         "limit": 200,
         "query": {"eo:cloud_cover": {"lt": 30}, "platform": {"in": ["landsat-8", "landsat-9"]}},
     }
-    req = urllib.request.Request(STAC, data=json.dumps(body).encode(),
-                                 headers={"Content-Type": "application/json"})
+    req = urllib.request.Request(
+        STAC, data=json.dumps(body).encode(), headers={"Content-Type": "application/json"}
+    )
     feats = json.load(urllib.request.urlopen(req, timeout=60))["features"]
     feats.sort(key=lambda f: f["properties"]["eo:cloud_cover"])
     f = feats[0]
     a = f["assets"]
     return {
-        "id": f["id"], "dt": f["properties"]["datetime"][:10],
-        "cloud": f["properties"]["eo:cloud_cover"], "platform": f["properties"].get("platform"),
-        "lwir11": sign(a["lwir11"]["href"]), "qa_pixel": sign(a["qa_pixel"]["href"]),
+        "id": f["id"],
+        "dt": f["properties"]["datetime"][:10],
+        "cloud": f["properties"]["eo:cloud_cover"],
+        "platform": f["properties"].get("platform"),
+        "lwir11": sign(a["lwir11"]["href"]),
+        "qa_pixel": sign(a["qa_pixel"]["href"]),
         "qa_radsat": sign(a["qa_radsat"]["href"]),
     }
 
@@ -102,9 +111,14 @@ def read_native(href):
     scene grid, so identical windows/shapes keep the bands pixel-aligned for masking."""
     with rasterio.Env(GDAL_DISABLE_READDIR_ON_OPEN="EMPTY_DIR"):
         with rasterio.open(href) as src:
-            l, b, r, t = transform_bounds("EPSG:4326", src.crs,
-                                          BBOX["west"], BBOX["south"], BBOX["east"], BBOX["north"])
-            win = windows.from_bounds(l, b, r, t, transform=src.transform).round_offsets().round_lengths()
+            left, bottom, right, top = transform_bounds(
+                "EPSG:4326", src.crs, BBOX["west"], BBOX["south"], BBOX["east"], BBOX["north"]
+            )
+            win = (
+                windows.from_bounds(left, bottom, right, top, transform=src.transform)
+                .round_offsets()
+                .round_lengths()
+            )
             arr = src.read(1, window=win, boundless=True, fill_value=0)  # native res, no decimation
             return arr, src.window_transform(win), src.crs
 
@@ -114,19 +128,31 @@ def reproject_masked(celsius_src, src_transform, src_crs, dst_transform, dst_crs
     Bilinear resampling excludes NODATA source pixels, so clear pixels next to a cloud are
     interpolated only from valid neighbours — no cloud contamination bleeds across edges."""
     dst = np.full((OUT_H, OUT_W), NODATA, dtype=np.float32)
-    reproject(celsius_src, dst, src_transform=src_transform, src_crs=src_crs,
-              dst_transform=dst_transform, dst_crs=dst_crs, resampling=Resampling.bilinear,
-              src_nodata=NODATA, dst_nodata=NODATA)
+    reproject(
+        celsius_src,
+        dst,
+        src_transform=src_transform,
+        src_crs=src_crs,
+        dst_transform=dst_transform,
+        dst_crs=dst_crs,
+        resampling=Resampling.bilinear,
+        src_nodata=NODATA,
+        dst_nodata=NODATA,
+    )
     return dst
 
 
 def main():
     os.makedirs(OUT_DIR, exist_ok=True)
     scene = find_scene()
-    print(f"Scene: {scene['id']}  date={scene['dt']}  {scene['platform']}  tile-cloud={scene['cloud']:.1f}%")
+    print(
+        f"Scene: {scene['id']}  date={scene['dt']}  {scene['platform']}  tile-cloud={scene['cloud']:.1f}%"
+    )
 
     dst_crs = "EPSG:4326"
-    dst_transform = from_bounds(BBOX["west"], BBOX["south"], BBOX["east"], BBOX["north"], OUT_W, OUT_H)
+    dst_transform = from_bounds(
+        BBOX["west"], BBOX["south"], BBOX["east"], BBOX["north"], OUT_W, OUT_H
+    )
 
     # --- read all three bands at NATIVE resolution (same scene grid, pixel-aligned) ---
     print("Reading ST_B10 (lwir11) ...")
@@ -135,15 +161,17 @@ def main():
     qa, _, _ = read_native(scene["qa_pixel"])
     print("Reading qa_radsat ...")
     radsat, _, _ = read_native(scene["qa_radsat"])
-    st = st.astype(np.float32); qa = qa.astype(np.uint16); radsat = radsat.astype(np.uint16)
+    st = st.astype(np.float32)
+    qa = qa.astype(np.uint16)
+    radsat = radsat.astype(np.uint16)
 
     # --- MASK AT SOURCE RESOLUTION, before any resampling ---
     celsius = st * 0.00341802 + 149.0 - 273.15  # DN -> Kelvin -> Celsius
     fill = st == 0
-    implausible = (celsius < 0) | (celsius > 70)              # scan-edge / junk
-    cloud = (qa & QA_MASK_BITS) != 0                          # fill/dilated/cirrus/cloud/shadow
-    water = (qa & (1 << 7)) != 0                              # QA_PIXEL water — this is a LAND-
-    saturated = (radsat & (0b11 << 9)) != 0                   # surface story; let basemap sea show
+    implausible = (celsius < 0) | (celsius > 70)  # scan-edge / junk
+    cloud = (qa & QA_MASK_BITS) != 0  # fill/dilated/cirrus/cloud/shadow
+    water = (qa & (1 << 7)) != 0  # QA_PIXEL water — this is a LAND-
+    saturated = (radsat & (0b11 << 9)) != 0  # surface story; let basemap sea show
     src_masked = fill | implausible | cloud | water | saturated
     celsius_src = np.where(src_masked, NODATA, celsius).astype(np.float32)
 
@@ -157,8 +185,10 @@ def main():
 
     lo, hi = np.percentile(celsius_dst[valid], [2, 98])
     lo, hi = float(np.floor(lo)), float(np.ceil(hi))
-    print(f"Clear coverage {valid.mean()*100:.1f}%  ·  LST display range {lo:.0f}-{hi:.0f} °C  "
-          f"(clear min {celsius_dst[valid].min():.1f}, max {celsius_dst[valid].max():.1f})")
+    print(
+        f"Clear coverage {valid.mean() * 100:.1f}%  ·  LST display range {lo:.0f}-{hi:.0f} °C  "
+        f"(clear min {celsius_dst[valid].min():.1f}, max {celsius_dst[valid].max():.1f})"
+    )
 
     norm = np.clip((celsius_dst - lo) / (hi - lo), 0, 1)
     lut = build_lut(INFERNO_STOPS)
@@ -176,17 +206,36 @@ def main():
         pass
     img.save(out, optimize=True)
     print(f"Wrote {out}  ({OUT_W}x{OUT_H})")
-    print(f"Resolution: 100 m Landsat thermal (USGS-resampled to 30 m), displayed ~{DISPLAY_MPP:.0f} m/px")
+    print(
+        f"Resolution: 100 m Landsat thermal (USGS-resampled to 30 m), displayed ~{DISPLAY_MPP:.0f} m/px"
+    )
 
     meta = {
-        "id": scene["id"], "dt": scene["dt"], "platform": scene["platform"],
-        "cloud": scene["cloud"], "tminC": lo, "tmaxC": hi,
-        "sourceResolution": "30 m (100 m thermal)", "displayResolution": f"~{DISPLAY_MPP:.0f} m/px",
+        "id": scene["id"],
+        "dt": scene["dt"],
+        "platform": scene["platform"],
+        "cloud": scene["cloud"],
+        "tminC": lo,
+        "tmaxC": hi,
+        "sourceResolution": "30 m (100 m thermal)",
+        "displayResolution": f"~{DISPLAY_MPP:.0f} m/px",
         "outWidth": OUT_W,
     }
-    json.dump(meta, open(os.path.join(os.path.dirname(__file__), "real_thermal_scene.json"), "w"), indent=2)
-    print("Legend range for js/metadata.js:  tminC =", int(lo), " tmaxC =", int(hi),
-          " date =", scene["dt"], " platform =", scene["platform"])
+    json.dump(
+        meta,
+        open(os.path.join(os.path.dirname(__file__), "real_thermal_scene.json"), "w"),
+        indent=2,
+    )
+    print(
+        "Legend range for js/metadata.js:  tminC =",
+        int(lo),
+        " tmaxC =",
+        int(hi),
+        " date =",
+        scene["dt"],
+        " platform =",
+        scene["platform"],
+    )
 
 
 if __name__ == "__main__":

@@ -69,7 +69,10 @@ export function sampleImageNorm(imgEl, bounds, latlng, lut) {
     const dg = g - lut[k][1];
     const db = b - lut[k][2];
     const d = dr * dr + dg * dg + db * db;
-    if (d < bestDist) { bestDist = d; best = k; }
+    if (d < bestDist) {
+      bestDist = d;
+      best = k;
+    }
   }
   return { norm: best / 255 };
 }

@@ -1,0 +1,42 @@
+{
+  "name": "earth-observation-sg",
+  "version": "1.0.0",
+  "description": "Scrolling data story: what Singapore looks like from Earth-observation satellites.",
+  "private": true,
+  "license": "MIT",
+  "homepage": "https://github.com/radc4t/earth-observation-sg",
+  "scripts": {
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "build": "node scripts/build.mjs",
+    "preview": "npm run build && serve dist",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{css,html,md,json}": [
+      "prettier --write"
+    ],
+    "*.py": [
+      "ruff check --fix",
+      "ruff format"
+    ]
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "esbuild": "^0.24.0",
+    "eslint": "^9.13.0",
+    "globals": "^15.11.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3",
+    "serve": "^14.2.4"
+  },
+  "allowScripts": {
+    "esbuild@0.24.2": true
+  }
+}

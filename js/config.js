@@ -16,8 +16,10 @@ const INFERNO_STOPS = RAMPS.inferno;
 // Legend note for a REAL layer, and a prominent badge + note for an illustrative one —
 // all derived from js/metadata.js so wording can't drift from the About panel.
 function realNote(m, extra) {
-  return `<p class="legend-note">Real: ${m.source} · ${m.date} · ${m.sourceResolution} source, ` +
-    `${m.displayResolution} display grid${extra ? ' · ' + extra : ''}</p>`;
+  return (
+    `<p class="legend-note">Real: ${m.source} · ${m.date} · ${m.sourceResolution} source, ` +
+    `${m.displayResolution} display grid${extra ? ' · ' + extra : ''}</p>`
+  );
 }
 function illustrationTag(m) {
   return `<p class="legend-badge">${m.badge}</p>`;
@@ -25,7 +27,6 @@ function illustrationTag(m) {
 function illustrationNote(m) {
   return `<p class="legend-note">${m.illustrationNote} · real source: ${m.realSource}</p>`;
 }
-
 
 function rampSvg(stops, leftLabel, rightLabel, id) {
   const gid = `grad-${id}`;
@@ -68,10 +69,7 @@ function vesselSwatches() {
   return (
     '<div class="legend-swatches">' +
     Object.entries(VESSEL_TYPES)
-      .map(
-        ([name, col]) =>
-          `<span class="sw"><i style="background:${col}"></i>${name}</span>`
-      )
+      .map(([name, col]) => `<span class="sw"><i style="background:${col}"></i>${name}</span>`)
       .join('') +
     '</div>'
   );
@@ -96,8 +94,13 @@ export const SECTIONS = [
     kind: 'section',
     // Vegetation and heat share one camera (whole-island framing) so scrolling between
     // them cross-fades the NDVI and temperature layers in place — no zoom/pan jump.
-    camera: { center: [1.35, 103.80], zoom: 12, duration: 2 },
-    layerConfig: { id: ndviLayer.id, sourceId: ndviLayer.sourceId, module: ndviLayer, visible: true },
+    camera: { center: [1.35, 103.8], zoom: 12, duration: 2 },
+    layerConfig: {
+      id: ndviLayer.id,
+      sourceId: ndviLayer.sourceId,
+      module: ndviLayer,
+      visible: true,
+    },
     legendHTML:
       `<h3>${M.ndvi.title}</h3>` +
       rampSvg(VIRIDIS_STOPS, M.ndvi.rampEnds[0], M.ndvi.rampEnds[1], 'ndvi') +
@@ -118,8 +121,13 @@ export const SECTIONS = [
     id: 'heat',
     kind: 'section',
     // Same camera as vegetation (see note there) — the layers swap without moving the map.
-    camera: { center: [1.35, 103.80], zoom: 12, duration: 2 },
-    layerConfig: { id: thermalLayer.id, sourceId: thermalLayer.sourceId, module: thermalLayer, visible: true },
+    camera: { center: [1.35, 103.8], zoom: 12, duration: 2 },
+    layerConfig: {
+      id: thermalLayer.id,
+      sourceId: thermalLayer.sourceId,
+      module: thermalLayer,
+      visible: true,
+    },
     legendHTML:
       `<h3>${M.thermal.title}</h3>` +
       valueRamp(INFERNO_STOPS, tempTicks(M.thermal.tminC, M.thermal.tmaxC), '°C', 'thermal') +
@@ -141,8 +149,13 @@ export const SECTIONS = [
     kind: 'section',
     // Same longitude as heat, so the move to the Strait is a smooth vertical glide south
     // (a slightly longer duration eases the bigger jump down to the ships).
-    camera: { center: [1.205, 103.80], zoom: 11.5, duration: 2.6 },
-    layerConfig: { id: maritimeLayer.id, sourceId: maritimeLayer.sourceId, module: maritimeLayer, visible: true },
+    camera: { center: [1.205, 103.8], zoom: 11.5, duration: 2.6 },
+    layerConfig: {
+      id: maritimeLayer.id,
+      sourceId: maritimeLayer.sourceId,
+      module: maritimeLayer,
+      visible: true,
+    },
     legendHTML:
       `<h3>${M.maritime.title}</h3>` +
       illustrationTag(M.maritime) +

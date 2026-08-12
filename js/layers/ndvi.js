@@ -7,18 +7,18 @@
 // To swap in a different raster, call `ndviLayer.swapWithRealRaster(map, url, bounds)` —
 // see docs/swap-instructions.md.
 
+import { sampleImageNorm, buildLut } from '../sample.js';
+import { RAMPS } from '../ramps.js';
+import { LAYER_META } from '../metadata.js';
+
 // Bounds MUST match BBOX in generate_overlays.py.
 // Leaflet bounds order: [[south, west], [north, east]]
 const BOUNDS = [
-  [1.205, 103.60],
+  [1.205, 103.6],
   [1.475, 104.04],
 ];
 
 const ACTIVE_OPACITY = 0.82;
-
-import { sampleImageNorm, buildLut } from '../sample.js';
-import { RAMPS } from '../ramps.js';
-import { LAYER_META } from '../metadata.js';
 
 const LUT = buildLut(RAMPS.viridis);
 

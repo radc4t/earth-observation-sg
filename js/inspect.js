@@ -21,12 +21,16 @@ export function initInspect(map, inspectables) {
       const m = LAYER_META[k];
       const res = inspectables[k].inspect(e.latlng); // { value, unit, cls } | { masked } | null
       if (!res || res.masked) {
-        return `<div class="inspect-row"><strong>${m.title}</strong><br>` +
-          `<span class="pop-sub">no reading here — cloud / water / edge</span></div>`;
+        return (
+          `<div class="inspect-row"><strong>${m.title}</strong><br>` +
+          `<span class="pop-sub">no reading here — cloud / water / edge</span></div>`
+        );
       }
       const cls = res.cls ? ` · ${res.cls}` : '';
-      return `<div class="inspect-row"><strong>${m.title}: ${res.value}${res.unit}</strong>${cls}<br>` +
-        `<span class="pop-sub">${m.source} · ${m.date}</span></div>`;
+      return (
+        `<div class="inspect-row"><strong>${m.title}: ${res.value}${res.unit}</strong>${cls}<br>` +
+        `<span class="pop-sub">${m.source} · ${m.date}</span></div>`
+      );
     });
 
     L.popup({ offset: [0, -2], className: 'inspect-popup' })

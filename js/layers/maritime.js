@@ -22,18 +22,48 @@ const VESSEL_TYPES = {
 // than stopping short in open water. Kept over the strait (south of the island).
 let LANE_SPINES = [
   // Deep-water westbound lane (southernmost)
-  [[104.35, 1.190], [104.10, 1.180], [103.95, 1.170], [103.80, 1.162], [103.66, 1.158], [103.52, 1.160], [103.28, 1.158]],
+  [
+    [104.35, 1.19],
+    [104.1, 1.18],
+    [103.95, 1.17],
+    [103.8, 1.162],
+    [103.66, 1.158],
+    [103.52, 1.16],
+    [103.28, 1.158],
+  ],
   // Eastbound lane (slightly north)
-  [[103.26, 1.190], [103.52, 1.192], [103.66, 1.190], [103.80, 1.194], [103.95, 1.202], [104.10, 1.212], [104.35, 1.222]],
+  [
+    [103.26, 1.19],
+    [103.52, 1.192],
+    [103.66, 1.19],
+    [103.8, 1.194],
+    [103.95, 1.202],
+    [104.1, 1.212],
+    [104.35, 1.222],
+  ],
   // Inner lane closer to the port / anchorages
-  [[104.30, 1.242], [104.05, 1.235], [103.92, 1.230], [103.82, 1.238], [103.72, 1.246], [103.62, 1.242], [103.40, 1.238]],
+  [
+    [104.3, 1.242],
+    [104.05, 1.235],
+    [103.92, 1.23],
+    [103.82, 1.238],
+    [103.72, 1.246],
+    [103.62, 1.242],
+    [103.4, 1.238],
+  ],
   // Feeder toward Pasir Panjang / Tuas port waters
-  [[104.14, 1.188], [103.98, 1.205], [103.88, 1.222], [103.80, 1.248], [103.74, 1.265]],
+  [
+    [104.14, 1.188],
+    [103.98, 1.205],
+    [103.88, 1.222],
+    [103.8, 1.248],
+    [103.74, 1.265],
+  ],
 ];
 
-let laneMeta = [];      // measured lanes
-let vessels = [];       // {marker, laneIndex, t, speedTps, dir, type, id, knots}
-let laneGroup = null;   // L.LayerGroup for lane lines
+let laneMeta = []; // measured lanes
+let vessels = []; // {marker, laneIndex, t, speedTps, dir, type, id, knots}
+let laneGroup = null; // L.LayerGroup for lane lines
 let vesselGroup = null; // L.LayerGroup for vessel markers
 let rafId = null;
 let running = false;
@@ -108,7 +138,16 @@ function buildVessels(map, count) {
         `<span class="pop-note">Simulated position (illustrative)</span></div>`
     );
     marker.addTo(vesselGroup);
-    vessels.push({ marker, laneIndex, t: Math.random(), speedTps: 0.006 + Math.random() * 0.012, dir, type, id, knots });
+    vessels.push({
+      marker,
+      laneIndex,
+      t: Math.random(),
+      speedTps: 0.006 + Math.random() * 0.012,
+      dir,
+      type,
+      id,
+      knots,
+    });
   }
 }
 
@@ -139,8 +178,12 @@ export const maritimeLayer = {
 
     // Freeze vessel repositioning while the map animates (zoom/pan), then let it settle
     // for a frame — so the dots stay glued to the lane lines instead of flying off.
-    map.on('zoomstart movestart', () => { mapMoving = true; });
-    map.on('zoomend moveend', () => { mapMoving = false; });
+    map.on('zoomstart movestart', () => {
+      mapMoving = true;
+    });
+    map.on('zoomend moveend', () => {
+      mapMoving = false;
+    });
   },
 
   setVisible(map, show) {
@@ -167,7 +210,11 @@ export const maritimeLayer = {
       if (!running) return;
       // While the map is mid animation, hold position (the pane transform carries the
       // dots with the lines); just keep the clock current so we don't jump on resume.
-      if (mapMoving) { last = now; rafId = requestAnimationFrame(tick); return; }
+      if (mapMoving) {
+        last = now;
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
       const dt = Math.min((now - last) / 1000, 0.1);
       last = now;
       for (const v of vessels) {
@@ -199,7 +246,13 @@ export const maritimeLayer = {
     laneMeta = LANE_SPINES.map(measureLane);
     laneGroup.clearLayers();
     LANE_SPINES.forEach((s) => {
-      L.polyline(laneLatLngs(s), { color: '#7dd3fc', weight: 1.2, opacity: 0.35, dashArray: '2 6', interactive: false }).addTo(laneGroup);
+      L.polyline(laneLatLngs(s), {
+        color: '#7dd3fc',
+        weight: 1.2,
+        opacity: 0.35,
+        dashArray: '2 6',
+        interactive: false,
+      }).addTo(laneGroup);
     });
     vesselGroup.clearLayers();
     vessels = [];
@@ -209,13 +262,27 @@ export const maritimeLayer = {
       const knots = (f.properties && f.properties.knots) || 12;
       const p = pointAt(laneMeta[i], Math.random());
       const marker = L.circleMarker([p.lat, p.lng], {
-        radius: 4, color: '#0b1622', weight: 1,
-        fillColor: VESSEL_TYPES[type] || '#38bdf8', fillOpacity: 0.95,
+        radius: 4,
+        color: '#0b1622',
+        weight: 1,
+        fillColor: VESSEL_TYPES[type] || '#38bdf8',
+        fillOpacity: 0.95,
         bubblingMouseEvents: false,
       });
-      marker.bindPopup(`<div class="vessel-pop"><strong>${type}</strong> · ${id}<br>${knots} kn</div>`);
+      marker.bindPopup(
+        `<div class="vessel-pop"><strong>${type}</strong> · ${id}<br>${knots} kn</div>`
+      );
       marker.addTo(vesselGroup);
-      vessels.push({ marker, laneIndex: i, t: Math.random(), speedTps: 0.006 + Math.random() * 0.012, dir: 1, type, id, knots });
+      vessels.push({
+        marker,
+        laneIndex: i,
+        t: Math.random(),
+        speedTps: 0.006 + Math.random() * 0.012,
+        dir: 1,
+        type,
+        id,
+        knots,
+      });
     });
     if (visible) this.start(map);
   },

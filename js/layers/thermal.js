@@ -8,17 +8,17 @@
 // To swap in a different raster, call `thermalLayer.swapWithRealRaster(map, url, bounds)`
 // — see docs/swap-instructions.md.
 
+import { sampleImageNorm, buildLut } from '../sample.js';
+import { RAMPS } from '../ramps.js';
+import { LAYER_META } from '../metadata.js';
+
 // Bounds MUST match BBOX in generate_overlays.py. Order: [[south, west], [north, east]]
 const BOUNDS = [
-  [1.205, 103.60],
+  [1.205, 103.6],
   [1.475, 104.04],
 ];
 
 const ACTIVE_OPACITY = 0.8;
-
-import { sampleImageNorm, buildLut } from '../sample.js';
-import { RAMPS } from '../ramps.js';
-import { LAYER_META } from '../metadata.js';
 
 const LUT = buildLut(RAMPS.inferno);
 

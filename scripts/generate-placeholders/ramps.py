@@ -5,11 +5,12 @@ The overlay builders (generate_overlays.py, build_real_ndvi.py, build_real_therm
 legends/inspect reverse-lookup all come from the same definition. js/ramps.js is formatted
 one `[position, "#hex"]` pair per line specifically to keep this parser robust.
 """
+
 import os
 import re
 
 _PAIR = re.compile(r'\[\s*([\d.]+)\s*,\s*"(#[0-9a-fA-F]{6})"\s*\]')
-_HEADER = re.compile(r'(\w+)\s*:\s*\[\s*$')
+_HEADER = re.compile(r"(\w+)\s*:\s*\[\s*$")
 
 
 def load_ramps(path=None):
@@ -20,7 +21,7 @@ def load_ramps(path=None):
     with open(path) as fh:
         for line in fh:
             header = _HEADER.search(line)
-            if header and '"' not in line:      # a ramp header line, e.g. "  viridis: ["
+            if header and '"' not in line:  # a ramp header line, e.g. "  viridis: ["
                 current = header.group(1)
                 ramps[current] = []
                 continue

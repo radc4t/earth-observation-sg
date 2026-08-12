@@ -1,0 +1,7 @@
+dist/
+node_modules/
+assets/
+*.png
+package-lock.json
+scripts/generate-placeholders/real_ndvi_scene.json
+scripts/generate-placeholders/real_thermal_scene.json

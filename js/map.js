@@ -42,8 +42,12 @@ export const INTRO_VIEW = { center: [1.15, 104.3], zoom: 9 };
 
 // Simple pub/sub so the UI (legend) can react to tile/overlay failures.
 const errorListeners = new Set();
-export function onLayerError(fn) { errorListeners.add(fn); }
-function notifyError(info) { errorListeners.forEach((fn) => fn(info)); }
+export function onLayerError(fn) {
+  errorListeners.add(fn);
+}
+function notifyError(info) {
+  errorListeners.forEach((fn) => fn(info));
+}
 
 const basemapLayers = {}; // key -> L.TileLayer
 let activeKey = DEFAULT_BASEMAP;
@@ -89,7 +93,9 @@ export function createMap(container = 'map') {
       maxZoom: 17,
       crossOrigin: true,
     });
-    layer.on('tileerror', () => notifyError({ sourceId: `basemap-${b.key}`, message: 'tile load error' }));
+    layer.on('tileerror', () =>
+      notifyError({ sourceId: `basemap-${b.key}`, message: 'tile load error' })
+    );
     basemapLayers[b.key] = layer;
   });
   basemapLayers[DEFAULT_BASEMAP].addTo(map);
@@ -108,7 +114,9 @@ export function setBasemap(map, key) {
   return key;
 }
 
-export function getActiveBasemap() { return activeKey; }
+export function getActiveBasemap() {
+  return activeKey;
+}
 
 // Wire a two-button basemap toggle in the given container element. Implemented as a pair
 // of toggle buttons (aria-pressed) rather than an ARIA radiogroup — simpler and truer to

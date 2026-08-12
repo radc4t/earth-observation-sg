@@ -28,13 +28,15 @@ Requires: numpy, Pillow
 """
 
 import os
+
 import numpy as np
 from PIL import Image
+from ramps import load_ramps
 
 # ---------------------------------------------------------------------------
 # Output geometry
 # ---------------------------------------------------------------------------
-OUT_W, OUT_H = 1024, 640          # overlay raster resolution
+OUT_W, OUT_H = 1024, 640  # overlay raster resolution
 OUT_DIR = os.path.normpath(
     os.path.join(os.path.dirname(__file__), "..", "..", "assets", "overlays")
 )
@@ -47,7 +49,6 @@ BBOX = dict(west=103.60, south=1.205, east=104.04, north=1.475)
 # ---------------------------------------------------------------------------
 # Colour ramps — loaded from the single source of truth (js/ramps.js) via ramps.py.
 # ---------------------------------------------------------------------------
-from ramps import load_ramps
 _R = load_ramps()
 VIRIDIS_STOPS = _R["viridis"]
 INFERNO_STOPS = _R["inferno"]
@@ -55,7 +56,7 @@ INFERNO_STOPS = _R["inferno"]
 
 def _hex_to_rgb(h):
     h = h.lstrip("#")
-    return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+    return tuple(int(h[i : i + 2], 16) for i in (0, 2, 4))
 
 
 def build_lut(stops, n=256):
@@ -89,7 +90,7 @@ def radial_field(centres, sigma_px):
     for lng, lat, weight in centres:
         cx, cy = lnglat_to_px(lng, lat)
         d2 = (xx - cx) ** 2 + (yy - cy) ** 2
-        field += weight * np.exp(-d2 / (2.0 * sigma_px ** 2))
+        field += weight * np.exp(-d2 / (2.0 * sigma_px**2))
     return field
 
 
@@ -109,11 +110,11 @@ def make_ndvi():
     lower over the dense CBD / industrial south. Illustrative only."""
     rng = np.random.default_rng(42)
     green_centres = [
-        (103.805, 1.354, 1.00),   # Central Catchment / MacRitchie
-        (103.776, 1.348, 0.95),   # Bukit Timah Nature Reserve
-        (103.729, 1.350, 0.70),   # Western Catchment
-        (103.815, 1.322, 0.55),   # Botanic Gardens
-        (103.980, 1.360, 0.60),   # Pulau Ubin / NE greenery
+        (103.805, 1.354, 1.00),  # Central Catchment / MacRitchie
+        (103.776, 1.348, 0.95),  # Bukit Timah Nature Reserve
+        (103.729, 1.350, 0.70),  # Western Catchment
+        (103.815, 1.322, 0.55),  # Botanic Gardens
+        (103.980, 1.360, 0.60),  # Pulau Ubin / NE greenery
     ]
     grey_centres = [
         (103.851, 1.283, -0.85),  # CBD / Marina
@@ -132,11 +133,11 @@ def make_thermal():
     parks and open water. Illustrative land-surface-temperature proxy."""
     rng = np.random.default_rng(7)
     hot_centres = [
-        (103.700, 1.320, 1.00),   # Jurong industrial
-        (103.660, 1.265, 0.95),   # Tuas
-        (103.851, 1.290, 0.80),   # CBD
-        (103.902, 1.352, 0.70),   # Tampines / Pasir Ris dense HDB
-        (103.760, 1.430, 0.65),   # Woodlands / Sembawang
+        (103.700, 1.320, 1.00),  # Jurong industrial
+        (103.660, 1.265, 0.95),  # Tuas
+        (103.851, 1.290, 0.80),  # CBD
+        (103.902, 1.352, 0.70),  # Tampines / Pasir Ris dense HDB
+        (103.760, 1.430, 0.65),  # Woodlands / Sembawang
     ]
     cool_centres = [
         (103.805, 1.354, -0.95),  # MacRitchie reservoir / catchment

@@ -1,135 +1,183 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Singapore from Space — Earth Observation, made visible</title>
-  <meta name="description" content="A scrolling data story showing what Singapore looks like from Earth-observation satellites — green cover, urban heat, and maritime traffic — and why the data matters." />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="css/style.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-</head>
-<body>
-  <!-- Fixed map canvas behind the scrolling narrative -->
-  <div id="map" aria-label="Interactive satellite map of Singapore" role="region"></div>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Singapore from Space — Earth Observation, made visible</title>
+    <meta
+      name="description"
+      content="A scrolling data story showing what Singapore looks like from Earth-observation satellites — green cover, urban heat, and maritime traffic — and why the data matters."
+    />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  </head>
+  <body>
+    <!-- Fixed map canvas behind the scrolling narrative -->
+    <div id="map" aria-label="Interactive satellite map of Singapore" role="region"></div>
 
-  <!-- Basemap toggle -->
-  <div id="basemap-toggle" class="basemap-toggle" role="group" aria-label="Satellite basemap"></div>
+    <!-- Basemap toggle -->
+    <div
+      id="basemap-toggle"
+      class="basemap-toggle"
+      role="group"
+      aria-label="Satellite basemap"
+    ></div>
 
-  <!-- Legend (updates per section) -->
-  <aside id="legend-panel" class="legend-panel" aria-live="polite" hidden>
-    <button id="legend-collapse" class="legend-collapse" type="button" aria-expanded="true" aria-controls="legend">Legend ▾</button>
-    <div id="legend" class="legend"></div>
-  </aside>
+    <!-- Legend (updates per section) -->
+    <aside id="legend-panel" class="legend-panel" aria-live="polite" hidden>
+      <button
+        id="legend-collapse"
+        class="legend-collapse"
+        type="button"
+        aria-expanded="true"
+        aria-controls="legend"
+      >
+        Legend ▾
+      </button>
+      <div id="legend" class="legend"></div>
+    </aside>
 
-  <!-- Scrolling story -->
-  <main class="story">
-    <section class="step step--hero" data-id="hero">
-      <div class="card card--hero">
-        <p class="kicker">Earth Observation · Singapore</p>
-        <h1>Singapore, from space</h1>
-        <p class="lede">Every day, satellites photograph our island in wavelengths the eye can’t see. This is what that data reveals — about our greenery, our heat, and the ships at our doorstep.</p>
-        <div class="scroll-cue" aria-hidden="true"><span>Scroll to explore</span><div class="arrow"></div></div>
-      </div>
-    </section>
-
-    <section class="step" data-id="vegetation">
-      <div class="card">
-        <p class="kicker">01 · Environmental monitoring</p>
-        <h2>How green is Singapore, really?</h2>
-        <p class="datatag">Sentinel-2 · 28 Jul 2024</p>
-        <p>Satellites measure how strongly the land reflects near-infrared light — healthy plants glow in it. Combined into a Vegetation Index (NDVI), it maps living green cover, from the dense canopy over the Central Catchment and Bukit Timah to the bare ground of a new worksite.</p>
-        <dl class="meta">
-          <div><dt>Who uses it</dt><dd>NParks, environmental agencies, researchers</dd></div>
-          <div><dt>Why it matters</dt><dd>Tracking green-cover change shows where the city is greening — and where tree cover is being lost — guiding reforestation and the “City in Nature” goal.</dd></div>
-        </dl>
-      </div>
-    </section>
-
-    <section class="step" data-id="heat">
-      <div class="card">
-        <p class="kicker">02 · Climate resilience</p>
-        <h2>Where Singapore’s surface runs hottest</h2>
-        <p class="datatag">Landsat 9 · 6 Jul 2025</p>
-        <p>Landsat’s thermal sensor reads the temperature of the ground itself — the <em>surface</em>, which runs hotter than the air. In this single-date snapshot, industrial Jurong and Tuas and dense built-up estates read hottest, while reservoirs, the Botanic Gardens and the forested centre stay markedly cooler — a pattern consistent with the urban heat-island effect.</p>
-        <dl class="meta">
-          <div><dt>Who uses it</dt><dd>URA, HDB, climate-resilience planners</dd></div>
-          <div><dt>Why it matters</dt><dd>Seeing where heat concentrates tells planners where cooling matters most — shade, greenery, water and building design — as Singapore adapts to a warming climate.</dd></div>
-        </dl>
-      </div>
-    </section>
-
-    <section class="step" data-id="maritime">
-      <div class="card">
-        <p class="kicker">03 · Maritime activity</p>
-        <h2>One of the world’s busiest waterways</h2>
-        <p>Ships can broadcast their position over AIS, and satellites can listen from orbit. This <strong>illustration</strong> shows how those tracks reveal the structure of traffic in the Singapore Strait — tankers, container ships and bulk carriers threading past the island. <em>Tap a vessel to inspect it.</em></p>
-        <dl class="meta">
-          <div><dt>Who uses it</dt><dd>MPA, maritime security, port operations</dd></div>
-          <div><dt>Why it matters</dt><dd>Space-based vessel tracking supports safe navigation, pollution response and maritime security in one of the most heavily trafficked straits on Earth.</dd></div>
-        </dl>
-      </div>
-    </section>
-
-    <section class="step step--outro" data-id="outro">
-      <div class="card">
-        <p class="kicker">Earth Observation Initiative</p>
-        <h2>Land, heat, and sea — one island, observed</h2>
-        <p>Green cover, surface heat and maritime traffic are three views of the same place, each read from space. This is the promise of an Earth Observation Initiative: turning satellite data into understanding people can act on. <strong>Public agencies observe the Earth so the public can see it too.</strong></p>
-
-        <details class="about">
-          <summary>About the data</summary>
-          <div class="about-body">
-            <p><strong>Real imagery:</strong> the satellite basemap is genuine, free, public data — <a href="https://s2maps.eu" target="_blank" rel="noopener">EOX Sentinel-2 cloudless</a> (Copernicus Sentinel-2) and <a href="https://www.esri.com" target="_blank" rel="noopener">Esri World Imagery</a>.</p>
-            <!-- Per-layer provenance is generated from js/metadata.js (single source of truth). -->
-            <div id="about-data"></div>
-            <p class="snapshot-note">Each layer is a single-date snapshot: <strong>NDVI 28 Jul 2024</strong> (Sentinel-2) and <strong>surface temperature 6 Jul 2025</strong> (Landsat 9). They are different acquisitions, not a same-day comparison. Surface temperature is the heat radiating from the ground — hotter than the air temperature. See <a href="docs/swap-instructions.md">docs/swap-instructions.md</a>.</p>
-            <p class="credits">Basemaps © EOX IT Services GmbH · © Esri, Maxar, Earthstar Geographics · Contains modified Copernicus Sentinel data. Map rendering by Leaflet.</p>
+    <!-- Scrolling story -->
+    <main class="story">
+      <section class="step step--hero" data-id="hero">
+        <div class="card card--hero">
+          <p class="kicker">Earth Observation · Singapore</p>
+          <h1>Singapore, from space</h1>
+          <p class="lede">
+            Every day, satellites photograph our island in wavelengths the eye can’t see. This is
+            what that data reveals — about our greenery, our heat, and the ships at our doorstep.
+          </p>
+          <div class="scroll-cue" aria-hidden="true">
+            <span>Scroll to explore</span>
+            <div class="arrow"></div>
           </div>
-        </details>
-      </div>
-    </section>
-  </main>
+        </div>
+      </section>
 
-  <script type="module">
-    import {
-      createMap, registerBasemapToggle, registerOverlays, onLayerError,
-    } from './js/map.js';
-    import { SECTIONS } from './js/config.js';
-    import { initScrolly } from './js/scrolly.js';
-    import { aboutDataHTML } from './js/metadata.js';
-    import { initInspect } from './js/inspect.js';
-    import { ndviLayer } from './js/layers/ndvi.js';
-    import { thermalLayer } from './js/layers/thermal.js';
+      <section class="step" data-id="vegetation">
+        <div class="card">
+          <p class="kicker">01 · Environmental monitoring</p>
+          <h2>How green is Singapore, really?</h2>
+          <p class="datatag">Sentinel-2 · 28 Jul 2024</p>
+          <p>
+            Satellites measure how strongly the land reflects near-infrared light — healthy plants
+            glow in it. Combined into a Vegetation Index (NDVI), it maps living green cover, from
+            the dense canopy over the Central Catchment and Bukit Timah to the bare ground of a new
+            worksite.
+          </p>
+          <dl class="meta">
+            <div>
+              <dt>Who uses it</dt>
+              <dd>NParks, environmental agencies, researchers</dd>
+            </div>
+            <div>
+              <dt>Why it matters</dt>
+              <dd>
+                Tracking green-cover change shows where the city is greening — and where tree cover
+                is being lost — guiding reforestation and the “City in Nature” goal.
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
 
-    // Populate the "About the data" panel from the single metadata source.
-    document.getElementById('about-data').innerHTML = aboutDataHTML();
+      <section class="step" data-id="heat">
+        <div class="card">
+          <p class="kicker">02 · Climate resilience</p>
+          <h2>Where Singapore’s surface runs hottest</h2>
+          <p class="datatag">Landsat 9 · 6 Jul 2025</p>
+          <p>
+            Landsat’s thermal sensor reads the temperature of the ground itself — the
+            <em>surface</em>, which runs hotter than the air. In this single-date snapshot,
+            industrial Jurong and Tuas and dense built-up estates read hottest, while reservoirs,
+            the Botanic Gardens and the forested centre stay markedly cooler — a pattern consistent
+            with the urban heat-island effect.
+          </p>
+          <dl class="meta">
+            <div>
+              <dt>Who uses it</dt>
+              <dd>URA, HDB, climate-resilience planners</dd>
+            </div>
+            <div>
+              <dt>Why it matters</dt>
+              <dd>
+                Seeing where heat concentrates tells planners where cooling matters most — shade,
+                greenery, water and building design — as Singapore adapts to a warming climate.
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
 
-    const map = createMap('map');
-    const modules = [
-      ...new Set(SECTIONS.map((s) => s.layerConfig && s.layerConfig.module).filter(Boolean)),
-    ];
+      <section class="step" data-id="maritime">
+        <div class="card">
+          <p class="kicker">03 · Maritime activity</p>
+          <h2>One of the world’s busiest waterways</h2>
+          <p>
+            Ships can broadcast their position over AIS, and satellites can listen from orbit. This
+            <strong>illustration</strong> shows how those tracks reveal the structure of traffic in
+            the Singapore Strait — tankers, container ships and bulk carriers threading past the
+            island. <em>Tap a vessel to inspect it.</em>
+          </p>
+          <dl class="meta">
+            <div>
+              <dt>Who uses it</dt>
+              <dd>MPA, maritime security, port operations</dd>
+            </div>
+            <div>
+              <dt>Why it matters</dt>
+              <dd>
+                Space-based vessel tracking supports safe navigation, pollution response and
+                maritime security in one of the most heavily trafficked straits on Earth.
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
 
-    registerOverlays(map, modules);
-    registerBasemapToggle(map, document.getElementById('basemap-toggle'));
-    // The hero step activates on load and flies from the wide intro framing (zoom 9)
-    // down to the whole island (zoom 11) — a cinematic zoom-in.
-    const story = initScrolly(map, SECTIONS, { onLayerError });
-    // Click the map to read the NDVI / temperature value under the cursor.
-    initInspect(map, { ndvi: ndviLayer, thermal: thermalLayer });
-    // Expose for deep-linking (#section in URL) and debugging.
-    window.__map = map;
-    window.__story = story;
-    if (location.hash) story.jumpTo(location.hash.slice(1));
+      <section class="step step--outro" data-id="outro">
+        <div class="card">
+          <p class="kicker">Earth Observation Initiative</p>
+          <h2>Land, heat, and sea — one island, observed</h2>
+          <p>
+            Green cover, surface heat and maritime traffic are three views of the same place, each
+            read from space. This is the promise of an Earth Observation Initiative: turning
+            satellite data into understanding people can act on.
+            <strong>Public agencies observe the Earth so the public can see it too.</strong>
+          </p>
 
-    // Legend collapse (mobile-friendly)
-    const collapseBtn = document.getElementById('legend-collapse');
-    const legendBody = document.getElementById('legend');
-    collapseBtn.addEventListener('click', () => {
-      const open = legendBody.hasAttribute('hidden');
-      if (open) { legendBody.removeAttribute('hidden'); collapseBtn.setAttribute('aria-expanded', 'true'); collapseBtn.textContent = 'Legend ▾'; }
-      else { legendBody.setAttribute('hidden', ''); collapseBtn.setAttribute('aria-expanded', 'false'); collapseBtn.textContent = 'Legend ▸'; }
-    });
-  </script>
-</body>
+          <details class="about">
+            <summary>About the data</summary>
+            <div class="about-body">
+              <p>
+                <strong>Real imagery:</strong> the satellite basemap is genuine, free, public data —
+                <a href="https://s2maps.eu" target="_blank" rel="noopener"
+                  >EOX Sentinel-2 cloudless</a
+                >
+                (Copernicus Sentinel-2) and
+                <a href="https://www.esri.com" target="_blank" rel="noopener">Esri World Imagery</a
+                >.
+              </p>
+              <!-- Per-layer provenance is generated from js/metadata.js (single source of truth). -->
+              <div id="about-data"></div>
+              <p class="snapshot-note">
+                Each layer is a single-date snapshot: <strong>NDVI 28 Jul 2024</strong> (Sentinel-2)
+                and <strong>surface temperature 6 Jul 2025</strong> (Landsat 9). They are different
+                acquisitions, not a same-day comparison. Surface temperature is the heat radiating
+                from the ground — hotter than the air temperature. See
+                <a href="docs/swap-instructions.md">docs/swap-instructions.md</a>.
+              </p>
+              <p class="credits">
+                Basemaps © EOX IT Services GmbH · © Esri, Maxar, Earthstar Geographics · Contains
+                modified Copernicus Sentinel data. Map rendering by Leaflet.
+              </p>
+            </div>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="js/app.js"></script>
+  </body>
 </html>

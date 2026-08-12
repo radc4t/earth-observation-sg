@@ -24,17 +24,19 @@ must never be described as "10 m"; it is 10 m source at a coarser display resolu
 Output: assets/overlays/ndvi_real.png  (+ prints the date/scene/bounds to wire in).
 Requires: rasterio, numpy, Pillow.
 """
-import io
-import os
+
 import json
 import math
+import os
 import urllib.request
+
 import numpy as np
-from PIL import Image
 import rasterio
-from rasterio.warp import reproject, Resampling, transform_bounds
-from rasterio.transform import from_bounds
+from PIL import Image
+from ramps import load_ramps
 from rasterio import windows
+from rasterio.transform import from_bounds
+from rasterio.warp import Resampling, reproject, transform_bounds
 
 # ---- overlay geometry (MUST match BBOX in generate_overlays.py / the JS layer bounds)
 BBOX = dict(west=103.60, south=1.205, east=104.04, north=1.475)
@@ -46,10 +48,11 @@ BBOX_WIDTH_M = 111320.0 * (BBOX["east"] - BBOX["west"]) * math.cos(math.radians(
 OUT_W = 3072
 OUT_H = int(round(OUT_W * (BBOX["north"] - BBOX["south"]) / (BBOX["east"] - BBOX["west"])))
 DISPLAY_MPP = BBOX_WIDTH_M / OUT_W
-OUT_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", "assets", "overlays"))
+OUT_DIR = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "assets", "overlays")
+)
 
 # viridis stops from the single source of truth (js/ramps.js) via ramps.py.
-from ramps import load_ramps
 VIRIDIS_STOPS = load_ramps()["viridis"]
 # NDVI display range: below NDVI_LO reads as bare/built, above NDVI_HI as dense canopy.
 # Keep in sync with js/metadata.js ndvi.displayMin / displayMax (used by click-to-inspect).
@@ -62,7 +65,7 @@ STAC = "https://earth-search.aws.element84.com/v1/search"
 
 def _hex(h):
     h = h.lstrip("#")
-    return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+    return tuple(int(h[i : i + 2], 16) for i in (0, 2, 4))
 
 
 def build_lut(stops, n=256):
@@ -82,38 +85,62 @@ def find_scene():
         "datetime": "2023-06-01T00:00:00Z/2025-08-01T00:00:00Z",
         "limit": 100,
     }
-    req = urllib.request.Request(STAC, data=json.dumps(body).encode(),
-                                 headers={"Content-Type": "application/json"})
+    req = urllib.request.Request(
+        STAC, data=json.dumps(body).encode(), headers={"Content-Type": "application/json"}
+    )
     feats = json.load(urllib.request.urlopen(req, timeout=60))["features"]
     feats.sort(key=lambda f: f["properties"]["eo:cloud_cover"])
     f = feats[0]
     a = f["assets"]
     return {
-        "id": f["id"], "dt": f["properties"]["datetime"][:10],
+        "id": f["id"],
+        "dt": f["properties"]["datetime"][:10],
         "cloud": f["properties"]["eo:cloud_cover"],
-        "red": a["red"]["href"], "nir": a["nir"]["href"], "scl": a["scl"]["href"],
+        "red": a["red"]["href"],
+        "nir": a["nir"]["href"],
+        "scl": a["scl"]["href"],
     }
 
 
 def read_to_grid(href, dst_transform, dst_crs, resampling):
     """Window-read the source COG over the target bbox at reduced res, then reproject
     onto the exact EPSG:4326 output grid."""
-    with rasterio.Env(GDAL_DISABLE_READDIR_ON_OPEN="EMPTY_DIR",
-                      CPL_VSIL_CURL_ALLOWED_EXTENSIONS=".tif"):
+    with rasterio.Env(
+        GDAL_DISABLE_READDIR_ON_OPEN="EMPTY_DIR", CPL_VSIL_CURL_ALLOWED_EXTENSIONS=".tif"
+    ):
         with rasterio.open(href) as src:
             # source-CRS bounds of our bbox, buffered slightly
-            l, b, r, t = transform_bounds(dst_crs, src.crs,
-                                          BBOX["west"], BBOX["south"], BBOX["east"], BBOX["north"])
-            win = windows.from_bounds(l, b, r, t, transform=src.transform).round_offsets().round_lengths()
+            left, bottom, right, top = transform_bounds(
+                dst_crs, src.crs, BBOX["west"], BBOX["south"], BBOX["east"], BBOX["north"]
+            )
+            win = (
+                windows.from_bounds(left, bottom, right, top, transform=src.transform)
+                .round_offsets()
+                .round_lengths()
+            )
             # read at ~1.5x output res for a manageable, fast decimated read
             oh, ow = OUT_H * 3 // 2, OUT_W * 3 // 2
-            arr = src.read(1, window=win, out_shape=(oh, ow),
-                           resampling=resampling, boundless=True, fill_value=0)
+            arr = src.read(
+                1,
+                window=win,
+                out_shape=(oh, ow),
+                resampling=resampling,
+                boundless=True,
+                fill_value=0,
+            )
             src_transform = src.window_transform(win) * rasterio.Affine.scale(
-                win.width / ow, win.height / oh)
+                win.width / ow, win.height / oh
+            )
             dst = np.zeros((OUT_H, OUT_W), dtype=arr.dtype)
-            reproject(arr, dst, src_transform=src_transform, src_crs=src.crs,
-                      dst_transform=dst_transform, dst_crs=dst_crs, resampling=resampling)
+            reproject(
+                arr,
+                dst,
+                src_transform=src_transform,
+                src_crs=src.crs,
+                dst_transform=dst_transform,
+                dst_crs=dst_crs,
+                resampling=resampling,
+            )
             return dst
 
 
@@ -123,11 +150,16 @@ def main():
     print(f"Scene: {scene['id']}  date={scene['dt']}  tile-cloud={scene['cloud']:.1f}%")
 
     dst_crs = "EPSG:4326"
-    dst_transform = from_bounds(BBOX["west"], BBOX["south"], BBOX["east"], BBOX["north"], OUT_W, OUT_H)
+    dst_transform = from_bounds(
+        BBOX["west"], BBOX["south"], BBOX["east"], BBOX["north"], OUT_W, OUT_H
+    )
 
-    print("Reading red (B04) ...");  red = read_to_grid(scene["red"], dst_transform, dst_crs, Resampling.bilinear).astype(np.float32)
-    print("Reading nir (B08) ...");  nir = read_to_grid(scene["nir"], dst_transform, dst_crs, Resampling.bilinear).astype(np.float32)
-    print("Reading scl ...");        scl = read_to_grid(scene["scl"], dst_transform, dst_crs, Resampling.nearest).astype(np.int16)
+    print("Reading red (B04) ...")
+    red = read_to_grid(scene["red"], dst_transform, dst_crs, Resampling.bilinear).astype(np.float32)
+    print("Reading nir (B08) ...")
+    nir = read_to_grid(scene["nir"], dst_transform, dst_crs, Resampling.bilinear).astype(np.float32)
+    print("Reading scl ...")
+    scl = read_to_grid(scene["scl"], dst_transform, dst_crs, Resampling.nearest).astype(np.int16)
 
     nodata = (red == 0) & (nir == 0)
     # Harmonised L2A (post-2022): reflectance = DN/10000 - 0.1; clip negatives to 0.
@@ -143,9 +175,11 @@ def main():
     masked = nodata | too_dark | np.isin(scl, list(SCL_MASK))
     valid = ~masked
     if valid.any():
-        print(f"NDVI over clear pixels: min={ndvi[valid].min():.2f} "
-              f"median={np.median(ndvi[valid]):.2f} max={ndvi[valid].max():.2f} "
-              f"clear-coverage={valid.mean()*100:.1f}%")
+        print(
+            f"NDVI over clear pixels: min={ndvi[valid].min():.2f} "
+            f"median={np.median(ndvi[valid]):.2f} max={ndvi[valid].max():.2f} "
+            f"clear-coverage={valid.mean() * 100:.1f}%"
+        )
 
     norm = np.clip((ndvi - NDVI_LO) / (NDVI_HI - NDVI_LO), 0, 1)
     lut = build_lut(VIRIDIS_STOPS)
@@ -164,14 +198,20 @@ def main():
         pass  # fall back to full RGBA if quantize is unavailable
     img.save(out, optimize=True)
     print(f"Wrote {out}  ({OUT_W}x{OUT_H})")
-    print(f"Resolution: 10 m Sentinel-2 source, displayed at ~{DISPLAY_MPP:.0f} m/px "
-          f"({OUT_W}px over ~{BBOX_WIDTH_M/1000:.0f} km)")
-    print("Leaflet bounds [[south,west],[north,east]]:",
-          [[BBOX["south"], BBOX["west"]], [BBOX["north"], BBOX["east"]]])
+    print(
+        f"Resolution: 10 m Sentinel-2 source, displayed at ~{DISPLAY_MPP:.0f} m/px "
+        f"({OUT_W}px over ~{BBOX_WIDTH_M / 1000:.0f} km)"
+    )
+    print(
+        "Leaflet bounds [[south,west],[north,east]]:",
+        [[BBOX["south"], BBOX["west"]], [BBOX["north"], BBOX["east"]]],
+    )
     scene["sourceResolution"] = "10 m"
     scene["displayResolution"] = f"~{DISPLAY_MPP:.0f} m/px"
     scene["outWidth"] = OUT_W
-    json.dump(scene, open(os.path.join(os.path.dirname(__file__), "real_ndvi_scene.json"), "w"), indent=2)
+    json.dump(
+        scene, open(os.path.join(os.path.dirname(__file__), "real_ndvi_scene.json"), "w"), indent=2
+    )
 
 
 if __name__ == "__main__":
