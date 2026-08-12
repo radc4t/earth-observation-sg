@@ -18,11 +18,17 @@ const VESSEL_TYPES = {
 // Hand-drawn lane spines south of the island. Waypoints are [lng, lat] (converted to
 // Leaflet [lat, lng] on use). Two ~westbound + one eastbound-ish deep-water lanes plus a
 // feeder toward the port give a believable pattern.
+// Extended well past the maritime view on both sides so the lanes run off-frame rather
+// than stopping short in open water. Kept over the strait (south of the island).
 let LANE_SPINES = [
-  [[104.10, 1.180], [103.95, 1.170], [103.80, 1.162], [103.66, 1.158], [103.52, 1.160]],
-  [[103.52, 1.192], [103.66, 1.190], [103.80, 1.194], [103.95, 1.202], [104.10, 1.212]],
-  [[104.05, 1.235], [103.92, 1.230], [103.82, 1.238], [103.72, 1.246], [103.62, 1.242]],
-  [[103.98, 1.205], [103.88, 1.222], [103.80, 1.248], [103.74, 1.265]],
+  // Deep-water westbound lane (southernmost)
+  [[104.35, 1.190], [104.10, 1.180], [103.95, 1.170], [103.80, 1.162], [103.66, 1.158], [103.52, 1.160], [103.28, 1.158]],
+  // Eastbound lane (slightly north)
+  [[103.26, 1.190], [103.52, 1.192], [103.66, 1.190], [103.80, 1.194], [103.95, 1.202], [104.10, 1.212], [104.35, 1.222]],
+  // Inner lane closer to the port / anchorages
+  [[104.30, 1.242], [104.05, 1.235], [103.92, 1.230], [103.82, 1.238], [103.72, 1.246], [103.62, 1.242], [103.40, 1.238]],
+  // Feeder toward Pasir Panjang / Tuas port waters
+  [[104.14, 1.188], [103.98, 1.205], [103.88, 1.222], [103.80, 1.248], [103.74, 1.265]],
 ];
 
 let laneMeta = [];      // measured lanes
