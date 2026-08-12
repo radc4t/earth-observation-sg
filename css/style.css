@@ -371,6 +371,17 @@ body {
 .legend {
   padding: 0 14px 14px;
 }
+/* header row: title left, classification badge right */
+.legend-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 10px;
+}
+.legend-head h3 {
+  margin: 0;
+}
 .legend h3 {
   margin: 4px 0 10px;
   font-size: 14.5px;
@@ -397,23 +408,49 @@ body {
   color: var(--ink-dim);
   font-family: var(--mono);
   font-size: 10.5px;
-  margin: 8px 0 0;
+  margin: 9px 0 0;
+  padding-top: 9px;
+  border-top: 1px solid var(--border); /* provenance divider — mirrors the story-card meta rule */
   line-height: 1.45;
 }
-/* prominent "Illustration"/"Simulation" tag so a placeholder is never read as real data */
+/* At-a-glance classification pill. Shared shape; the modifier sets the colour: green REAL for
+   real data, ochre ILLUSTRATION for placeholders — parallel weight so neither out-shouts the
+   other. Uppercase label lives in the markup (config.js), not text-transform. */
 .legend-badge {
-  display: inline-block;
-  margin: 0 0 8px;
+  flex: 0 0 auto;
   padding: 2px 8px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--illustration) 16%, transparent);
-  color: var(--illustration);
-  border: 1px solid color-mix(in srgb, var(--illustration) 42%, transparent);
   font-family: var(--mono);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
+}
+/* Badge text is darkened (toward black, staying on-hue) in the light theme so this small bold
+   label clears AA (~4.5:1) on the pale panel; the dark theme uses the lighter token directly,
+   which already clears AA on the dark panel. Backgrounds/borders stay token-derived tints. */
+.legend-badge--real {
+  color: color-mix(in srgb, var(--good) 78%, #000);
+  background: color-mix(in srgb, var(--good) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--good) 42%, transparent);
+}
+.legend-badge--illus {
+  color: color-mix(in srgb, var(--illustration) 78%, #000);
+  background: color-mix(in srgb, var(--illustration) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--illustration) 42%, transparent);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .legend-badge--real {
+    color: var(--good);
+  }
+  :root:not([data-theme]) .legend-badge--illus {
+    color: var(--illustration);
+  }
+}
+:root[data-theme='dark'] .legend-badge--real {
+  color: var(--good);
+}
+:root[data-theme='dark'] .legend-badge--illus {
+  color: var(--illustration);
 }
 .legend-unavailable {
   color: var(--critical);

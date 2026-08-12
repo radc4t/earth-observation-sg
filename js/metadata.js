@@ -43,7 +43,9 @@ export const LAYER_META = {
   maritime: {
     real: false,
     title: 'Vessel traffic',
-    badge: 'Simulation',
+    // Classification label (shown in the legend badge + About panel): the two-category
+    // vocabulary is REAL / ILLUSTRATION. The "simulated" specifics live in illustrationNote.
+    badge: 'Illustration',
     illustrationNote: 'Simulated tracks — not live AIS',
     realSource: 'AIS transponder data',
   },

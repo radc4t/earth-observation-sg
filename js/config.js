@@ -13,16 +13,28 @@ const M = LAYER_META;
 const VIRIDIS_STOPS = RAMPS.viridis;
 const INFERNO_STOPS = RAMPS.inferno;
 
-// Legend note for a REAL layer, and a prominent badge + note for an illustrative one —
-// all derived from js/metadata.js so wording can't drift from the About panel.
+// Legend header: title + an at-a-glance classification badge. The badge answers "what kind
+// of data is this?" (REAL / ILLUSTRATION); the provenance note below answers "where from?".
+// Both badges share one pill style so the illustrative layer is never more prominent than the
+// real ones. Canonical uppercase text lives in the markup (not via CSS text-transform) so the
+// accessible label is unambiguous.
+function legendHead(title, badgeHTML) {
+  return `<div class="legend-head"><h3>${title}</h3>${badgeHTML}</div>`;
+}
+function realTag() {
+  return '<span class="legend-badge legend-badge--real">REAL</span>';
+}
+function illustrationTag(m) {
+  return `<span class="legend-badge legend-badge--illus">${m.badge.toUpperCase()}</span>`;
+}
+
+// Provenance note for a REAL layer, and the context note for an illustrative one — all
+// derived from js/metadata.js so wording can't drift from the About panel.
 function realNote(m, extra) {
   return (
     `<p class="legend-note">Real: ${m.source} · ${m.date} · ${m.sourceResolution} source, ` +
     `${m.displayResolution} display grid${extra ? ' · ' + extra : ''}</p>`
   );
-}
-function illustrationTag(m) {
-  return `<p class="legend-badge">${m.badge}</p>`;
 }
 function illustrationNote(m) {
   return `<p class="legend-note">${m.illustrationNote} · real source: ${m.realSource}</p>`;
@@ -102,7 +114,7 @@ export const SECTIONS = [
       visible: true,
     },
     legendHTML:
-      `<h3>${M.ndvi.title}</h3>` +
+      legendHead(M.ndvi.title, realTag()) +
       rampSvg(VIRIDIS_STOPS, M.ndvi.rampEnds[0], M.ndvi.rampEnds[1], 'ndvi') +
       realNote(M.ndvi, 'clouds &amp; water masked'),
     copy: {
@@ -129,7 +141,7 @@ export const SECTIONS = [
       visible: true,
     },
     legendHTML:
-      `<h3>${M.thermal.title}</h3>` +
+      legendHead(M.thermal.title, realTag()) +
       valueRamp(INFERNO_STOPS, tempTicks(M.thermal.tminC, M.thermal.tmaxC), '°C', 'thermal') +
       realNote(M.thermal, 'clouds, shadow &amp; water masked'),
     copy: {
@@ -157,8 +169,7 @@ export const SECTIONS = [
       visible: true,
     },
     legendHTML:
-      `<h3>${M.maritime.title}</h3>` +
-      illustrationTag(M.maritime) +
+      legendHead(M.maritime.title, illustrationTag(M.maritime)) +
       vesselSwatches() +
       illustrationNote(M.maritime),
     copy: {
