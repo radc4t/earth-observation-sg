@@ -3,8 +3,8 @@
   "dt": "2025-07-06",
   "platform": "landsat-9",
   "cloud": 5.59,
-  "tminC": 31.0,
-  "tmaxC": 47.0,
+  "tminC": 33.0,
+  "tmaxC": 48.0,
   "sourceResolution": "30 m (100 m thermal)",
   "displayResolution": "~32 m/px",
   "outWidth": 1536

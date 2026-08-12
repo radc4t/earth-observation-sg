@@ -29,9 +29,11 @@ export const LAYER_META = {
     sourceResolution: '30 m (100 m thermal)',
     displayResolution: '~32 m/px',
     units: '°C',
-    tminC: 31,
-    tmaxC: 47,
-    processing: ['ST_B10 → °C', 'cloud & shadow masked (QA_PIXEL)'],
+    // Display range from build_real_thermal.py (2nd–98th percentile of clear land pixels).
+    // Update alongside a rebuild; the script prints the values.
+    tminC: 33,
+    tmaxC: 48,
+    processing: ['ST_B10 → °C', 'cloud, shadow & water masked (QA_PIXEL + QA_RADSAT)'],
     rampEnds: ['Cooler', 'Hotter'],
   },
   maritime: {
@@ -42,3 +44,27 @@ export const LAYER_META = {
     realSource: 'AIS transponder data',
   },
 };
+
+// Build the "About the data" panel body straight from LAYER_META, so the per-layer facts
+// (source, date, resolution) have a SINGLE source of truth shared with the legends — the
+// About panel can never drift from them. Order follows the story.
+export function aboutDataHTML() {
+  const order = ['ndvi', 'thermal', 'maritime'];
+  return order
+    .map((k) => {
+      const m = LAYER_META[k];
+      if (m.real) {
+        const proc = m.processing ? ` ${m.processing.join('; ')}.` : '';
+        const units = m.units ? `, in ${m.units}` : '';
+        return (
+          `<p><strong>${m.title}</strong> — real: ${m.source} · ${m.date}${units}. ` +
+          `${m.sourceResolution} source, ${m.displayResolution} display grid.${proc}</p>`
+        );
+      }
+      return (
+        `<p><strong>${m.title}</strong> — ${m.badge.toLowerCase()}: ${m.illustrationNote}. ` +
+        `Wired to accept real data (source: ${m.realSource}) via a one-line swap.</p>`
+      );
+    })
+    .join('');
+}

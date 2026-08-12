@@ -17,7 +17,7 @@ const M = LAYER_META;
 // all derived from js/metadata.js so wording can't drift from the About panel.
 function realNote(m, extra) {
   return `<p class="legend-note">Real: ${m.source} · ${m.date} · ${m.sourceResolution} source, ` +
-    `${m.displayResolution} display${extra ? ' · ' + extra : ''}</p>`;
+    `${m.displayResolution} display grid${extra ? ' · ' + extra : ''}</p>`;
 }
 function illustrationTag(m) {
   return `<p class="legend-badge">${m.badge}</p>`;
@@ -121,8 +121,8 @@ export const SECTIONS = [
     layerConfig: { id: thermalLayer.id, sourceId: thermalLayer.sourceId, module: thermalLayer, visible: true },
     legendHTML:
       `<h3>${M.thermal.title}</h3>` +
-      valueRamp(INFERNO_STOPS, tempTicks(M.thermal.tminC, M.thermal.tmaxC), '°', 'thermal') +
-      realNote(M.thermal, 'clouds &amp; shadow masked'),
+      valueRamp(INFERNO_STOPS, tempTicks(M.thermal.tminC, M.thermal.tmaxC), '°C', 'thermal') +
+      realNote(M.thermal, 'clouds, shadow &amp; water masked'),
     copy: {
       title: 'The city makes its own heat',
       body:

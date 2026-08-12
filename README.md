@@ -22,7 +22,8 @@ locations as you scroll.
   **~16 m/px** for display — it is *not* a 10 m raster (a single full-resolution PNG would
   be far too large; a COG/XYZ tile pipeline is the path to true full-res, noted below).
 - **Real surface temperature:** the **thermal layer is genuine Landsat 9** Collection-2
-  land-surface temperature in real **°C** (6 Jul 2025, cloud & shadow masked), from the
+  land-surface temperature in real **°C** (6 Jul 2025; cloud, shadow & water masked via
+  QA_PIXEL + QA_RADSAT, masked *before* resampling so cloud edges don't bleed), from the
   keyless Microsoft Planetary Computer archive via
   [`scripts/generate-placeholders/build_real_thermal.py`](scripts/generate-placeholders/build_real_thermal.py).
   Landsat's thermal band is 100 m (USGS-resampled to 30 m), displayed at ~32 m/px.

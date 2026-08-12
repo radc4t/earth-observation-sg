@@ -46,10 +46,12 @@ land-surface temperature** in real °C (6 Jul 2025, cloud & shadow masked), buil
 [`scripts/generate-placeholders/build_real_thermal.py`](../scripts/generate-placeholders/build_real_thermal.py).
 That script finds the least-cloudy Landsat 8/9 L2 scene over Singapore via the free,
 keyless **Microsoft Planetary Computer** STAC + SAS signing API, reads the ST_B10 band
-(`lwir11`) and QA (`qa_pixel`) with `rasterio`, converts DN → °C
-(`DN*0.00341802 + 149.0 − 273.15`), masks cloud/shadow/fill, and colourises inferno over a
-robust °C range. The display range (tminC/tmaxC in `js/metadata.js`) drives the legend
-ticks. Rebuild any time:
+(`lwir11`), `qa_pixel` and `qa_radsat` with `rasterio`, converts DN → °C
+(`DN*0.00341802 + 149.0 − 273.15`), and **masks cloud/shadow/water/fill/saturation at the
+source resolution — before resampling** (so a clear pixel next to a cloud isn't
+contaminated by bilinear mixing). Opacity is constant (colour encodes temperature, not
+opacity), and it colourises inferno over a robust °C range. The display range
+(tminC/tmaxC in `js/metadata.js`) drives the legend ticks. Rebuild any time:
 
 ```bash
 python3 scripts/generate-placeholders/build_real_thermal.py   # needs rasterio + numpy + Pillow

@@ -37,6 +37,7 @@
       <div class="card">
         <p class="kicker">01 · Environmental monitoring</p>
         <h2>How green is Singapore, really?</h2>
+        <p class="datatag">Sentinel-2 · 28 Jul 2024</p>
         <p>Satellites measure how strongly the land reflects near-infrared light — healthy plants glow in it. Combined into a Vegetation Index (NDVI), it maps living green cover, from the dense canopy over the Central Catchment and Bukit Timah to the bare ground of a new worksite.</p>
         <dl class="meta">
           <div><dt>Who uses it</dt><dd>NParks, environmental agencies, researchers</dd></div>
@@ -48,8 +49,9 @@
     <section class="step" data-id="heat">
       <div class="card">
         <p class="kicker">02 · Climate resilience</p>
-        <h2>The city makes its own heat</h2>
-        <p>Thermal sensors read the temperature of the ground itself. Industrial Jurong and Tuas, and dense built-up estates, store and re-radiate heat — an “urban heat island.” Reservoirs, the Botanic Gardens and the forested centre stay markedly cooler.</p>
+        <h2>Where Singapore’s surface runs hottest</h2>
+        <p class="datatag">Landsat 9 · 6 Jul 2025</p>
+        <p>Landsat’s thermal sensor reads the temperature of the ground itself — the <em>surface</em>, which runs hotter than the air. In this single-date snapshot, industrial Jurong and Tuas and dense built-up estates read hottest, while reservoirs, the Botanic Gardens and the forested centre stay markedly cooler — a pattern consistent with the urban heat-island effect.</p>
         <dl class="meta">
           <div><dt>Who uses it</dt><dd>URA, HDB, climate-resilience planners</dd></div>
           <div><dt>Why it matters</dt><dd>Seeing where heat concentrates tells planners where cooling matters most — shade, greenery, water and building design — as Singapore adapts to a warming climate.</dd></div>
@@ -61,7 +63,7 @@
       <div class="card">
         <p class="kicker">03 · Maritime activity</p>
         <h2>One of the world’s busiest waterways</h2>
-        <p>Ships broadcast their position over AIS, and satellites listen from orbit. Plotted together, the vessels trace the shipping lanes of the Singapore Strait — tankers, container ships and bulk carriers threading past the island in a near-constant stream. <em>Tap a vessel to inspect it.</em></p>
+        <p>Ships can broadcast their position over AIS, and satellites can listen from orbit. This <strong>illustration</strong> shows how those tracks reveal the structure of traffic in the Singapore Strait — tankers, container ships and bulk carriers threading past the island. <em>Tap a vessel to inspect it.</em></p>
         <dl class="meta">
           <div><dt>Who uses it</dt><dd>MPA, maritime security, port operations</dd></div>
           <div><dt>Why it matters</dt><dd>Space-based vessel tracking supports safe navigation, pollution response and maritime security in one of the most heavily trafficked straits on Earth.</dd></div>
@@ -79,9 +81,9 @@
           <summary>About the data</summary>
           <div class="about-body">
             <p><strong>Real imagery:</strong> the satellite basemap is genuine, free, public data — <a href="https://s2maps.eu" target="_blank" rel="noopener">EOX Sentinel-2 cloudless</a> (Copernicus Sentinel-2) and <a href="https://www.esri.com" target="_blank" rel="noopener">Esri World Imagery</a>.</p>
-            <p><strong>Real NDVI:</strong> the vegetation layer is genuine Sentinel-2 NDVI, computed from the free AWS Open Data Sentinel-2 L2A mirror (28&nbsp;Jul&nbsp;2024, clouds &amp; water masked). The source bands are <strong>10&nbsp;m</strong>; the exported overlay is that source resampled to <strong>~16&nbsp;m/px</strong> for display — not a 10&nbsp;m raster. See <a href="docs/swap-instructions.md">docs/swap-instructions.md</a>.</p>
-            <p><strong>Real surface temperature:</strong> the thermal layer is genuine <strong>Landsat&nbsp;9</strong> Collection-2 land-surface temperature in real&nbsp;°C (6&nbsp;Jul&nbsp;2025, cloud &amp; shadow masked), from the keyless Microsoft Planetary Computer archive. Landsat's thermal band is 100&nbsp;m, USGS-resampled to 30&nbsp;m; displayed at ~32&nbsp;m/px.</p>
-            <p><strong>One illustration remains:</strong> the vessel layer shows <em>simulated</em> tracks, tagged in its legend — not live AIS. It is wired to accept a real AIS feed via a one-line swap.</p>
+            <!-- Per-layer provenance is generated from js/metadata.js (single source of truth). -->
+            <div id="about-data"></div>
+            <p class="snapshot-note">Each layer is a single-date snapshot: <strong>NDVI 28 Jul 2024</strong> (Sentinel-2) and <strong>surface temperature 6 Jul 2025</strong> (Landsat 9). They are different acquisitions, not a same-day comparison. Surface temperature is the heat radiating from the ground — hotter than the air temperature. See <a href="docs/swap-instructions.md">docs/swap-instructions.md</a>.</p>
             <p class="credits">Basemaps © EOX IT Services GmbH · © Esri, Maxar, Earthstar Geographics · Contains modified Copernicus Sentinel data. Map rendering by Leaflet.</p>
           </div>
         </details>
@@ -95,6 +97,10 @@
     } from './js/map.js';
     import { SECTIONS } from './js/config.js';
     import { initScrolly } from './js/scrolly.js';
+    import { aboutDataHTML } from './js/metadata.js';
+
+    // Populate the "About the data" panel from the single metadata source.
+    document.getElementById('about-data').innerHTML = aboutDataHTML();
 
     const map = createMap('map');
     const modules = [
