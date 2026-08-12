@@ -13,13 +13,9 @@ export function initInspect(map, inspectables) {
   map.on('click', (e) => {
     const activeKeys = Object.keys(inspectables).filter((k) => state.overlays[k]);
 
-    if (activeKeys.length === 0) {
-      L.popup({ offset: [0, -2], className: 'inspect-popup' })
-        .setLatLng(e.latlng)
-        .setContent('<div class="inspect-pop"><span class="pop-none">No data at this location</span></div>')
-        .openOn(map);
-      return;
-    }
+    // No inspectable raster overlay here (e.g. the maritime / hero / outro sections) —
+    // there is nothing to read, so stay silent rather than popping "No data".
+    if (activeKeys.length === 0) return;
 
     const rows = activeKeys.map((k) => {
       const m = LAYER_META[k];
