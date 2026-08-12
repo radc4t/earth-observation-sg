@@ -11,9 +11,18 @@
 // The data overlays (NDVI / thermal / maritime) are illustrative placeholders and live
 // in js/layers/*. See docs/swap-instructions.md.
 
-import { setState } from './state.js';
+import { setState, subscribe } from './state.js';
 
 export const BASEMAPS = {
+  // Grey editorial ground — the calm Field-Report canvas the data chapters sit on.
+  esriLightGray: {
+    key: 'esriLightGray',
+    label: 'Grey canvas',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    attribution:
+      'Tiles © <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>, HERE, Garmin, © OpenStreetMap contributors, and the GIS user community',
+    maxNativeZoom: 16,
+  },
   sentinel2: {
     key: 'sentinel2',
     label: 'Sentinel-2 cloudless',
@@ -32,6 +41,7 @@ export const BASEMAPS = {
   },
 };
 
+// Sentinel-2 opens the story (cinematic true colour); the chapters cross-fade to grey.
 const DEFAULT_BASEMAP = 'sentinel2';
 
 // Leaflet uses [lat, lng]. Hero / default framing of the whole island.
@@ -86,62 +96,142 @@ export function createMap(container = 'map') {
     { passive: false }
   );
 
-  Object.values(BASEMAPS).forEach((b) => {
-    const layer = L.tileLayer(b.url, {
+  // Mount only the opening ground; other basemaps are added lazily on first use so the
+  // mounted set stays bounded (see setBasemap). Each basemap renders into its own pane so
+  // grounds can cross-fade via pane opacity.
+  mountBasemap(map, DEFAULT_BASEMAP, 1);
+
+  return map;
+}
+
+const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const paneName = (key) => `basemap-${key}`;
+
+// Each basemap lives in its own pane, below the overlay pane, with an opacity transition so
+// two grounds can cross-fade. Panes are created once and reused (Leaflet has no removePane).
+function ensurePane(map, key) {
+  const name = paneName(key);
+  let pane = map.getPane(name);
+  if (!pane) {
+    pane = map.createPane(name);
+    pane.style.zIndex = '200'; // above the (unused) default tilePane, below overlayPane (400)
+    pane.style.transition = reducedMotion() ? 'none' : 'opacity 0.6s ease';
+  }
+  return pane;
+}
+
+function setPaneOpacity(map, key, opacity) {
+  const pane = map.getPane(paneName(key));
+  if (pane) pane.style.opacity = String(opacity);
+}
+
+// Add a basemap's tile layer into its pane (creating both lazily) at the given opacity.
+function mountBasemap(map, key, opacity) {
+  const b = BASEMAPS[key];
+  if (!b) return null;
+  ensurePane(map, key);
+  let layer = basemapLayers[key];
+  if (!layer) {
+    layer = L.tileLayer(b.url, {
+      pane: paneName(key),
       attribution: b.attribution,
       maxNativeZoom: b.maxNativeZoom,
       maxZoom: 17,
       crossOrigin: true,
     });
     layer.on('tileerror', () =>
-      notifyError({ sourceId: `basemap-${b.key}`, message: 'tile load error' })
+      notifyError({ sourceId: `basemap-${key}`, message: 'tile load error' })
     );
-    basemapLayers[b.key] = layer;
-  });
-  basemapLayers[DEFAULT_BASEMAP].addTo(map);
-
-  return map;
+    basemapLayers[key] = layer;
+  }
+  if (!map.hasLayer(layer)) layer.addTo(map);
+  setPaneOpacity(map, key, opacity);
+  return layer;
 }
 
-// Show one basemap, hide the others. Returns the active key.
+// Pending removal of the outgoing ground after a fade — tracked so a fast re-selection can
+// cancel it (and so we never remove a layer we're about to reuse).
+let pendingCleanup = null;
+
+// Cross-fade the active ground to `key`. The story owns the ground during scrolling; a
+// manual toggle is a temporary override that the next section reasserts. All basemap changes
+// flow through here and publish `state.basemap`, so the toggle buttons can reflect the
+// active ground whether the change came from a click or from the story. Returns the active
+// key. Only the active ground (plus, briefly, the one fading out) stays mounted.
 export function setBasemap(map, key) {
-  if (!basemapLayers[key] || key === activeKey) return activeKey;
-  if (basemapLayers[activeKey]) map.removeLayer(basemapLayers[activeKey]);
-  // keep the basemap beneath overlays
-  basemapLayers[key].addTo(map);
-  if (basemapLayers[key].bringToBack) basemapLayers[key].bringToBack();
+  if (!BASEMAPS[key]) return activeKey;
+
+  // Cancel any in-flight cleanup so we don't remove a ground we're about to reuse.
+  if (pendingCleanup) {
+    clearTimeout(pendingCleanup.timer);
+    pendingCleanup = null;
+  }
+
+  if (key === activeKey) {
+    // Already active — make sure it's mounted and fully opaque (a prior fade may have left
+    // its pane at 0, or cleanup may have removed the layer).
+    mountBasemap(map, key, 1);
+    setState({ basemap: key });
+    return activeKey;
+  }
+
+  const outgoing = activeKey;
+  const instant = reducedMotion();
+  // Mount incoming beneath (transparent, unless reduced motion), then fade it up.
+  mountBasemap(map, key, instant ? 1 : 0);
   activeKey = key;
-  return key;
+  setState({ basemap: key });
+
+  const finishCleanup = () => {
+    const prev = basemapLayers[outgoing];
+    if (prev && outgoing !== activeKey && map.hasLayer(prev)) map.removeLayer(prev);
+    pendingCleanup = null;
+  };
+
+  if (instant) {
+    setPaneOpacity(map, outgoing, 0);
+    finishCleanup();
+  } else {
+    // Next frame, so the 0→1 opacity change actually transitions rather than snapping.
+    requestAnimationFrame(() => {
+      setPaneOpacity(map, key, 1);
+      setPaneOpacity(map, outgoing, 0);
+    });
+    pendingCleanup = { key: outgoing, timer: setTimeout(finishCleanup, 650) };
+  }
+  return activeKey;
 }
 
 export function getActiveBasemap() {
   return activeKey;
 }
 
-// Wire a two-button basemap toggle in the given container element. Implemented as a pair
-// of toggle buttons (aria-pressed) rather than an ARIA radiogroup — simpler and truer to
-// how the control behaves, and it needs no custom arrow-key handling.
+// Wire a basemap toggle in the given container element. Implemented as toggle buttons
+// (aria-pressed) rather than an ARIA radiogroup — simpler and truer to how the control
+// behaves, and it needs no custom arrow-key handling. The buttons reflect state.basemap and
+// re-sync whenever it changes, so the highlight tracks the active ground whether the change
+// came from a click or from the story reasserting its per-section ground.
 export function registerBasemapToggle(map, container) {
   const buttons = new Map();
+  const sync = (key) => {
+    buttons.forEach((el, k) => {
+      el.setAttribute('aria-pressed', String(k === key));
+      el.classList.toggle('is-active', k === key);
+    });
+  };
   Object.values(BASEMAPS).forEach((b) => {
     const btn = document.createElement('button');
     btn.className = 'basemap-btn';
     btn.type = 'button';
     btn.textContent = b.label;
     btn.setAttribute('aria-label', `Basemap: ${b.label}`);
-    btn.setAttribute('aria-pressed', String(activeKey === b.key));
-    if (activeKey === b.key) btn.classList.add('is-active');
-    btn.addEventListener('click', () => {
-      setBasemap(map, b.key);
-      setState({ basemap: b.key });
-      buttons.forEach((el, k) => {
-        el.setAttribute('aria-pressed', String(k === b.key));
-        el.classList.toggle('is-active', k === b.key);
-      });
-    });
+    // A click sets the ground; setBasemap publishes state.basemap, which drives the sync.
+    btn.addEventListener('click', () => setBasemap(map, b.key));
     buttons.set(b.key, btn);
     container.appendChild(btn);
   });
+  sync(activeKey);
+  subscribe((s) => sync(s.basemap));
 }
 
 // Register every overlay layer module (adds hidden layers once the map exists).

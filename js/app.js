@@ -7,6 +7,7 @@ import { SECTIONS } from './config.js';
 import { initScrolly } from './scrolly.js';
 import { aboutDataHTML } from './metadata.js';
 import { initInspect } from './inspect.js';
+import { registerThemeToggle } from './theme.js';
 import { ndviLayer } from './layers/ndvi.js';
 import { thermalLayer } from './layers/thermal.js';
 
@@ -20,6 +21,7 @@ const modules = [
 
 registerOverlays(map, modules);
 registerBasemapToggle(map, document.getElementById('basemap-toggle'));
+registerThemeToggle(document.getElementById('theme-toggle'));
 // The hero step activates on load and flies from the wide intro framing (zoom 9)
 // down to the whole island (zoom 11) — a cinematic zoom-in.
 const story = initScrolly(map, SECTIONS, { onLayerError });

@@ -8,6 +8,14 @@
       name="description"
       content="A scrolling data story showing what Singapore looks like from Earth-observation satellites — green cover, urban heat, and maritime traffic — and why the data matters."
     />
+    <!-- Apply a persisted theme choice before first paint so the page doesn't flash the
+         system theme first. Kept inline + tiny on purpose; js/theme.js owns the rest. -->
+    <script>
+      try {
+        var t = localStorage.getItem('eo-theme');
+        if (t) document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="css/style.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -23,6 +31,11 @@
       role="group"
       aria-label="Satellite basemap"
     ></div>
+
+    <!-- Light / dark theme toggle -->
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch theme">
+      ☾
+    </button>
 
     <!-- Legend (updates per section) -->
     <aside id="legend-panel" class="legend-panel" aria-live="polite" hidden>

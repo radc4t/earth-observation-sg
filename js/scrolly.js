@@ -3,6 +3,12 @@
 // calls from fast scrolling are collapsed to the latest target via an isFlying guard.
 
 import { setState } from './state.js';
+import { setBasemap } from './map.js';
+
+// Evidence, then interpretation: the map transforms first (camera + basemap + overlay), then
+// after a brief beat the story card rises. Tunable — re-time it once the real animation is on
+// screen. Set to 0 under reduced motion (the card appears with everything else).
+const CARD_REVEAL_DELAY_MS = 280;
 
 export function initScrolly(map, sections, opts = {}) {
   const legendEl = opts.legendEl || document.getElementById('legend');
@@ -17,6 +23,7 @@ export function initScrolly(map, sections, opts = {}) {
   let desired = null; // latest requested section
   let flownId = null; // section we last launched a flyTo toward
   let isFlying = false;
+  let revealTimer = null; // pending card-reveal; cleared if a newer section activates first
 
   function hideAllOverlays() {
     modules.forEach((m) => m.setVisible(map, false));
@@ -85,12 +92,36 @@ export function initScrolly(map, sections, opts = {}) {
     desired = section;
     map.closePopup(); // dismiss any inspect / vessel popup from the previous section
     setState({ section: section.id });
+
+    // The map transforms first — overlay, legend, ground cross-fade and camera all dispatch
+    // now — so the reader sees the evidence change before the story card interprets it.
     applyLayers(section);
     updateLegend(section);
-    document.querySelectorAll('.step').forEach((el) => {
-      el.classList.toggle('is-active', el.dataset.id === section.id);
-    });
+    if (section.basemap) setBasemap(map, section.basemap);
     scheduleFly();
+
+    // Then the card rises, a beat later. Clear any pending reveal so fast scrolling can't
+    // fire a stale section's card over the current one.
+    if (revealTimer) {
+      clearTimeout(revealTimer);
+      revealTimer = null;
+    }
+    document.querySelectorAll('.step').forEach((el) => el.classList.remove('is-active'));
+    const revealCard = () => {
+      document.querySelectorAll('.step').forEach((el) => {
+        el.classList.toggle('is-active', el.dataset.id === section.id);
+      });
+    };
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Hero reveals immediately (its card is always visible); chapters wait the beat.
+    if (reduced || section.kind === 'hero' || CARD_REVEAL_DELAY_MS === 0) {
+      revealCard();
+    } else {
+      revealTimer = setTimeout(() => {
+        revealTimer = null;
+        revealCard();
+      }, CARD_REVEAL_DELAY_MS);
+    }
   }
 
   // Observe step cards; activate the one nearest the middle of the viewport.

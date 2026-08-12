@@ -32,29 +32,39 @@
 }
 
 /* ---- Field Report design tokens ----
-   Phase 1 establishes the token system in the DARK baseline (matches the approved
-   dark-parity mockup). The light theme is staged below but dormant until Phase 2 adds
-   the grey basemap + theme toggle. Data ramps (viridis/inferno) live in js/ramps.js and
-   stay the only vivid colour. */
-:root {
-  --paper: #0e1518;
-  --panel: #141d21;
-  --panel-2: #1a252a;
-  --ink: #eaf1f0;
-  --ink-2: #b7c4c4;
-  --muted: #7e8e8e;
-  --border: #24312f;
-  --border-2: #33433f;
-  --accent: #4fb3c4;
-  --accent-ink: #05161a;
-  --accent-weak: rgba(79, 179, 196, 0.14);
-  --good: #55c08a;
-  --illustration: #e0a34a;
-  --critical: #e27a7a;
-  --focus: #4fb3c4;
-  --shadow: 0 12px 34px rgba(0, 0, 0, 0.5);
+   Light is the primary palette (the canonical Field Report look); dark is a first-class
+   parity theme. Colour tokens split by theme below; type / spacing / radius / aliases are
+   theme-independent and live once in the base :root. Data ramps (viridis/inferno) live in
+   js/ramps.js and stay the only vivid colour.
 
-  /* type roles */
+   Theme cascade:
+     :root                          → light (default: system light & no explicit choice)
+     @media (prefers-color-scheme: dark) :root:not([data-theme]) → dark (system dark, no choice)
+     :root[data-theme='dark']       → dark  (explicit user choice — wins over system)
+     :root[data-theme='light']      → light (explicit user choice — wins over system)
+   Attribute specificity (0,1,1) beats the media-query :root (0,0,1), so an explicit choice
+   always overrides the OS preference. js/theme.js sets data-theme only when the user has
+   chosen; otherwise it is left unset so the media query drives the theme. */
+:root {
+  /* light palette (primary) */
+  --paper: #f3f5f4;
+  --panel: #ffffff;
+  --panel-2: #eef1f0;
+  --ink: #14191b;
+  --ink-2: #3a464b;
+  --muted: #65727a;
+  --border: #d6dddb;
+  --border-2: #bec8c6;
+  --accent: #0e5a6b;
+  --accent-ink: #ffffff;
+  --accent-weak: rgba(14, 90, 107, 0.09);
+  --good: #2f8f5b;
+  --illustration: #b7791f;
+  --critical: #b23a3a;
+  --focus: #0e5a6b;
+  --shadow: 0 10px 34px rgba(20, 40, 45, 0.14);
+
+  /* type roles (theme-independent) */
   --serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -82,9 +92,52 @@
   --radius: var(--r-4);
 
   font-synthesis: none;
+  color-scheme: light dark; /* native scrollbars / form controls / Leaflet zoom match theme */
 }
 
-/* Light theme — staged for Phase 2; dormant until a toggle sets data-theme="light". */
+/* Dark palette. Applied when the system prefers dark AND the user hasn't chosen (media),
+   and whenever the user explicitly chooses dark. The two triggers carry identical tokens
+   so they can't drift. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --paper: #0e1518;
+    --panel: #141d21;
+    --panel-2: #1a252a;
+    --ink: #eaf1f0;
+    --ink-2: #b7c4c4;
+    --muted: #7e8e8e;
+    --border: #24312f;
+    --border-2: #33433f;
+    --accent: #4fb3c4;
+    --accent-ink: #05161a;
+    --accent-weak: rgba(79, 179, 196, 0.14);
+    --good: #55c08a;
+    --illustration: #e0a34a;
+    --critical: #e27a7a;
+    --focus: #4fb3c4;
+    --shadow: 0 12px 34px rgba(0, 0, 0, 0.5);
+  }
+}
+:root[data-theme='dark'] {
+  --paper: #0e1518;
+  --panel: #141d21;
+  --panel-2: #1a252a;
+  --ink: #eaf1f0;
+  --ink-2: #b7c4c4;
+  --muted: #7e8e8e;
+  --border: #24312f;
+  --border-2: #33433f;
+  --accent: #4fb3c4;
+  --accent-ink: #05161a;
+  --accent-weak: rgba(79, 179, 196, 0.14);
+  --good: #55c08a;
+  --illustration: #e0a34a;
+  --critical: #e27a7a;
+  --focus: #4fb3c4;
+  --shadow: 0 12px 34px rgba(0, 0, 0, 0.5);
+}
+/* Explicit light choice — redundant with the base :root, but present so an explicit
+   selection is self-documenting and robust to future changes in the dark selectors. */
 :root[data-theme='light'] {
   --paper: #f3f5f4;
   --panel: #ffffff;
@@ -102,6 +155,35 @@
   --critical: #b23a3a;
   --focus: #0e5a6b;
   --shadow: 0 10px 34px rgba(20, 40, 45, 0.14);
+}
+
+/* Ease the theme flip so light↔dark doesn't hard-cut. Only colour properties, and only on
+   panels that don't already run their own transition (.card extends its reveal transition
+   instead — see below). Disabled under reduced motion. */
+.legend-panel,
+.basemap-toggle,
+.basemap-btn,
+.theme-toggle,
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
+}
+html {
+  transition: background-color 0.3s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .legend-panel,
+  .basemap-toggle,
+  .basemap-btn,
+  .theme-toggle,
+  .leaflet-popup-content-wrapper,
+  .leaflet-popup-tip,
+  html {
+    transition: none;
+  }
 }
 
 * {
@@ -126,13 +208,13 @@ body {
   z-index: 0;
   background: var(--bg);
 }
-/* Leaflet controls & attribution — dark theme */
+/* Leaflet controls & attribution — theme-aware (tokens adapt to light/dark). */
 .leaflet-container {
   background: var(--bg);
   font-family: inherit;
 }
 .leaflet-control-attribution {
-  background: rgba(11, 22, 34, 0.7) !important;
+  background: color-mix(in srgb, var(--panel) 82%, transparent) !important;
   color: var(--ink-dim) !important;
   font-size: 10px;
   backdrop-filter: blur(4px);
@@ -146,7 +228,7 @@ body {
   border-color: var(--glass-brd) !important;
 }
 .leaflet-bar a:hover {
-  background: rgba(30, 48, 70, 0.95) !important;
+  background: var(--panel-2) !important;
 }
 .data-overlay {
   image-rendering: auto;
@@ -189,6 +271,42 @@ body {
 .basemap-btn:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* ---- theme toggle ---- */
+/* Minimal round button, bottom-left. Restyled with the other controls in a later phase. */
+.theme-toggle {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 6;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--glass-brd);
+  background: var(--glass);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+.theme-toggle:hover {
+  color: var(--accent);
+}
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+@media (max-width: 760px) {
+  .theme-toggle {
+    left: auto;
+    right: 12px;
+    top: 12px;
+    bottom: auto;
+  }
 }
 
 /* ---- legend ---- */
@@ -289,7 +407,7 @@ body {
   height: 11px;
   border-radius: 50%;
   display: inline-block;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 0 1px var(--border-2);
 }
 
 /* ---- story / step cards ---- */
@@ -320,13 +438,15 @@ body {
   border: 1px solid var(--glass-brd);
   border-radius: var(--radius);
   padding: 26px 26px 24px;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow);
   transform: translateY(14px);
   opacity: 0;
   transition:
     opacity 0.5s ease,
-    transform 0.5s ease;
+    transform 0.5s ease,
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease;
 }
 .step.is-active .card {
   opacity: 1;
