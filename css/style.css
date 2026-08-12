@@ -255,25 +255,25 @@ body {
   image-rendering: auto;
 }
 
-/* ---- basemap toggle ---- */
+/* ---- basemap selector (a quiet Field Report control, not a GIS toolbar) ---- */
 .basemap-toggle {
   position: fixed;
   top: 16px;
   left: 16px;
   z-index: 6;
   display: flex;
-  gap: 6px;
-  padding: 5px;
-  background: var(--glass);
-  border: 1px solid var(--glass-brd);
+  gap: 3px;
+  padding: 4px;
+  background: var(--panel);
+  border: 1px solid var(--border);
   border-radius: 999px;
-  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow);
 }
 .basemap-btn {
   border: 0;
   background: transparent;
-  color: var(--ink-dim);
-  font: 500 12.5px/1 inherit;
+  color: var(--muted);
+  font: 500 12px/1 var(--sans);
   padding: 7px 12px;
   border-radius: 999px;
   cursor: pointer;
@@ -290,12 +290,12 @@ body {
   font-weight: 600;
 }
 .basemap-btn:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
 /* ---- theme toggle ---- */
-/* Minimal round button, bottom-left. Restyled with the other controls in a later phase. */
+/* Minimal round button, bottom-left — same token language as the basemap selector. */
 .theme-toggle {
   position: fixed;
   left: 16px;
@@ -306,8 +306,8 @@ body {
   display: grid;
   place-items: center;
   border-radius: 999px;
-  border: 1px solid var(--glass-brd);
-  background: var(--glass);
+  border: 1px solid var(--border);
+  background: var(--panel);
   color: var(--ink);
   box-shadow: var(--shadow);
   font-size: 17px;

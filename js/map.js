@@ -13,6 +13,13 @@
 
 import { setState, subscribe } from './state.js';
 
+// OneMap (Singapore Land Authority) is prepared but NOT shipped live. Its tiles are token-free
+// per the OneMap docs, but its Terms of Use MANDATE embedding the official OneMap logo +
+// attribution, which is a government asset that must not be fabricated. So the entries below
+// stay disabled (filtered out of the UI) until the ToU is confirmed for this public site and
+// the official logo is embedded in their `attribution`. Flip this one flag to enable both.
+const ONEMAP_ENABLED = false;
+
 export const BASEMAPS = {
   // Default true-colour ground.
   sentinel2: {
@@ -22,6 +29,8 @@ export const BASEMAPS = {
     attribution:
       'Sentinel-2 cloudless © <a href="https://s2maps.eu" target="_blank" rel="noopener">EOX IT Services GmbH</a> (Contains modified Copernicus Sentinel data)',
     maxNativeZoom: 15,
+    crossOrigin: true,
+    enabled: true,
   },
   // Neutral grey reference basemap — an alternative ground that lets the data dominate.
   esriLightGray: {
@@ -31,6 +40,32 @@ export const BASEMAPS = {
     attribution:
       'Tiles © <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>, HERE, Garmin, © OpenStreetMap contributors, and the GIS user community',
     maxNativeZoom: 16,
+    crossOrigin: true,
+    enabled: true,
+  },
+  // --- OneMap, prepared but DISABLED (see ONEMAP_ENABLED). Before enabling: embed the
+  // official OneMap logo in `attribution` and confirm the ToU/limits for this site. No
+  // crossOrigin — these tiles are only rendered, never pixel-sampled, so requiring CORS
+  // headers would be a needless failure mode. `fallback` covers unavailability/rate-limits. ---
+  onemapGrey: {
+    key: 'onemapGrey',
+    label: 'OneMap Grey',
+    url: 'https://www.onemap.gov.sg/maps/tiles/Grey/{z}/{x}/{y}.png',
+    attribution:
+      '© <a href="https://www.onemap.gov.sg" target="_blank" rel="noopener">OneMap</a> · Singapore Land Authority',
+    maxNativeZoom: 18,
+    fallback: 'esriLightGray',
+    enabled: ONEMAP_ENABLED,
+  },
+  onemapNight: {
+    key: 'onemapNight',
+    label: 'OneMap Night',
+    url: 'https://www.onemap.gov.sg/maps/tiles/Night/{z}/{x}/{y}.png',
+    attribution:
+      '© <a href="https://www.onemap.gov.sg" target="_blank" rel="noopener">OneMap</a> · Singapore Land Authority',
+    maxNativeZoom: 18,
+    fallback: 'esriLightGray',
+    enabled: ONEMAP_ENABLED,
   },
 };
 
@@ -119,6 +154,11 @@ function setPaneOpacity(map, key, opacity) {
   if (pane) pane.style.opacity = String(opacity);
 }
 
+// Tile-error bookkeeping for the OneMap fallback: notify once per ground, and fall back at
+// most once per ground (tileerror fires repeatedly and asynchronously).
+const tileErrorCounts = {};
+const fellBack = new Set();
+
 // Add a basemap's tile layer into its pane (creating both lazily) at the given opacity.
 function mountBasemap(map, key, opacity) {
   const b = BASEMAPS[key];
@@ -131,11 +171,20 @@ function mountBasemap(map, key, opacity) {
       attribution: b.attribution,
       maxNativeZoom: b.maxNativeZoom,
       maxZoom: 17,
-      crossOrigin: true,
+      // Only where the config asks for it — never pixel-sample the basemap tiles, so requiring
+      // CORS headers (crossOrigin) would just add a failure mode (e.g. for OneMap).
+      crossOrigin: b.crossOrigin || undefined,
     });
-    layer.on('tileerror', () =>
-      notifyError({ sourceId: `basemap-${key}`, message: 'tile load error' })
-    );
+    layer.on('tileerror', () => {
+      const n = (tileErrorCounts[key] = (tileErrorCounts[key] || 0) + 1);
+      if (n === 1) notifyError({ sourceId: `basemap-${key}`, message: 'tile load error' });
+      // Unavailability / rate-limit fallback: only while this ground is still active, only if
+      // it declares a fallback, and only ONCE — so repeated async tileerrors can't churn state.
+      if (b.fallback && key === activeKey && !fellBack.has(key) && n >= 4) {
+        fellBack.add(key);
+        setBasemap(map, b.fallback);
+      }
+    });
     basemapLayers[key] = layer;
   }
   if (!map.hasLayer(layer)) layer.addTo(map);
@@ -213,17 +262,21 @@ export function registerBasemapToggle(map, container) {
       el.classList.toggle('is-active', k === key);
     });
   };
-  Object.values(BASEMAPS).forEach((b) => {
-    const btn = document.createElement('button');
-    btn.className = 'basemap-btn';
-    btn.type = 'button';
-    btn.textContent = b.label;
-    btn.setAttribute('aria-label', `Basemap: ${b.label}`);
-    // A click sets the ground; setBasemap publishes state.basemap, which drives the sync.
-    btn.addEventListener('click', () => setBasemap(map, b.key));
-    buttons.set(b.key, btn);
-    container.appendChild(btn);
-  });
+  // Only enabled grounds appear in the UI. Disabled entries (e.g. OneMap while ONEMAP_ENABLED
+  // is false) are filtered out BEFORE the DOM is created — genuinely unreachable, not CSS-hidden.
+  Object.values(BASEMAPS)
+    .filter((b) => b.enabled)
+    .forEach((b) => {
+      const btn = document.createElement('button');
+      btn.className = 'basemap-btn';
+      btn.type = 'button';
+      btn.textContent = b.label;
+      btn.setAttribute('aria-label', `Basemap: ${b.label}`);
+      // A click sets the ground; setBasemap publishes state.basemap, which drives the sync.
+      btn.addEventListener('click', () => setBasemap(map, b.key));
+      buttons.set(b.key, btn);
+      container.appendChild(btn);
+    });
   sync(activeKey);
   subscribe((s) => sync(s.basemap));
 }
