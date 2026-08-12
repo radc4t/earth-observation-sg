@@ -8,6 +8,7 @@ import { initScrolly } from './scrolly.js';
 import { aboutDataHTML } from './metadata.js';
 import { initInspect } from './inspect.js';
 import { registerThemeToggle } from './theme.js';
+import { RAMPS, rampGradientCss } from './ramps.js';
 import { ndviLayer } from './layers/ndvi.js';
 import { thermalLayer } from './layers/thermal.js';
 
@@ -27,6 +28,16 @@ registerThemeToggle(document.getElementById('theme-toggle'));
 const story = initScrolly(map, SECTIONS, { onLayerError });
 // Click the map to read the NDVI / temperature value under the cursor.
 initInspect(map, { ndvi: ndviLayer, thermal: thermalLayer });
+
+// Field-report card swatches: tint each real chapter's date-stamp chip with its own overlay
+// ramp (keyed by section id, not DOM order) so overlay, legend and card all share one source.
+// Maritime's flat ochre illustration chip is set in CSS.
+const paintStampSwatch = (sectionId, stops) => {
+  const el = document.querySelector(`.step[data-id="${sectionId}"] .datatag .swatch`);
+  if (el) el.style.background = rampGradientCss(stops);
+};
+paintStampSwatch('vegetation', RAMPS.viridis);
+paintStampSwatch('heat', RAMPS.inferno);
 // Expose for deep-linking (#section in URL) and debugging.
 window.__map = map;
 window.__story = story;

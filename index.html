@@ -70,9 +70,15 @@
 
       <section class="step" data-id="vegetation">
         <div class="card">
-          <p class="kicker">01 · Environmental monitoring</p>
+          <!-- coord mirrors config.js SECTIONS 'vegetation' camera.center [1.35, 103.8] -->
+          <p class="kicker">
+            <span class="kicker-label">01 · Vegetation</span>
+            <span class="coord">1.35°N 103.80°E</span>
+          </p>
           <h2>How green is Singapore, really?</h2>
-          <p class="datatag">Sentinel-2 · 28 Jul 2024</p>
+          <p class="datatag">
+            <span class="swatch" aria-hidden="true"></span>Sentinel-2 · 28 Jul 2024
+          </p>
           <p>
             Satellites measure how strongly the land reflects near-infrared light — healthy plants
             glow in it. Combined into a Vegetation Index (NDVI), it maps living green cover, from
@@ -92,14 +98,21 @@
               </dd>
             </div>
           </dl>
+          <p class="snap">Snapshot: 28 Jul 2024. Change needs a time series.</p>
         </div>
       </section>
 
       <section class="step" data-id="heat">
         <div class="card">
-          <p class="kicker">02 · Climate resilience</p>
+          <!-- coord mirrors config.js SECTIONS 'heat' camera.center [1.35, 103.8] -->
+          <p class="kicker">
+            <span class="kicker-label">02 · Urban heat</span>
+            <span class="coord">1.35°N 103.80°E</span>
+          </p>
           <h2>Where Singapore’s surface runs hottest</h2>
-          <p class="datatag">Landsat 9 · 6 Jul 2025</p>
+          <p class="datatag">
+            <span class="swatch" aria-hidden="true"></span>Landsat 9 · 6 Jul 2025
+          </p>
           <p>
             Landsat’s thermal sensor reads the temperature of the ground itself — the
             <em>surface</em>, which runs hotter than the air. In this single-date snapshot,
@@ -120,13 +133,21 @@
               </dd>
             </div>
           </dl>
+          <p class="snap">Snapshot: 6 Jul 2025. One-date pattern, not a one-day claim.</p>
         </div>
       </section>
 
       <section class="step" data-id="maritime">
         <div class="card">
-          <p class="kicker">03 · Maritime activity</p>
+          <!-- coord mirrors config.js SECTIONS 'maritime' camera.center [1.205, 103.8] -->
+          <p class="kicker">
+            <span class="kicker-label">03 · Maritime</span>
+            <span class="coord">1.21°N 103.80°E</span>
+          </p>
           <h2>One of the world’s busiest waterways</h2>
+          <p class="datatag datatag--illus">
+            <span class="swatch" aria-hidden="true"></span>Illustration · not live AIS
+          </p>
           <p>
             Ships can broadcast their position over AIS, and satellites can listen from orbit. This
             <strong>illustration</strong> shows how those tracks reveal the structure of traffic in
@@ -146,6 +167,7 @@
               </dd>
             </div>
           </dl>
+          <p class="snap">Simulated vessel tracks. Real source: AIS transponder data.</p>
         </div>
       </section>
 
