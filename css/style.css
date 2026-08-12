@@ -52,7 +52,7 @@
   --panel-2: #eef1f0;
   --ink: #14191b;
   --ink-2: #3a464b;
-  --muted: #65727a;
+  --muted: #5d6a72;
   --border: #d6dddb;
   --border-2: #bec8c6;
   --accent: #0e5a6b;
@@ -83,11 +83,7 @@
   --r-3: 12px;
   --r-4: 16px;
 
-  /* back-compat aliases: existing component rules adopt the new system with no churn */
-  --bg: var(--paper);
-  --glass: var(--panel);
-  --glass-brd: var(--border);
-  --ink-dim: var(--muted);
+  /* layout tokens */
   --card-w: 404px;
   --radius: var(--r-4);
 
@@ -144,7 +140,7 @@
   --panel-2: #eef1f0;
   --ink: #14191b;
   --ink-2: #3a464b;
-  --muted: #65727a;
+  --muted: #5d6a72;
   --border: #d6dddb;
   --border-2: #bec8c6;
   --accent: #0e5a6b;
@@ -194,7 +190,7 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: var(--bg);
+  background: var(--paper);
   color: var(--ink);
   font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
@@ -206,7 +202,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 0;
-  background: var(--bg);
+  background: var(--paper);
 }
 /* the map reads as "readable" only where there's an inspectable raster (set by inspect.js) */
 #map.is-inspectable {
@@ -253,12 +249,12 @@ body.methods-active #map-wash {
 
 /* Leaflet controls & attribution — theme-aware (tokens adapt to light/dark). */
 .leaflet-container {
-  background: var(--bg);
+  background: var(--paper);
   font-family: inherit;
 }
 .leaflet-control-attribution {
   background: color-mix(in srgb, var(--panel) 82%, transparent) !important;
-  color: var(--ink-dim) !important;
+  color: var(--muted) !important;
   font-size: 10px;
   backdrop-filter: blur(4px);
 }
@@ -266,9 +262,9 @@ body.methods-active #map-wash {
   color: var(--accent) !important;
 }
 .leaflet-bar a {
-  background: var(--glass) !important;
+  background: var(--panel) !important;
   color: var(--ink) !important;
-  border-color: var(--glass-brd) !important;
+  border-color: var(--border) !important;
 }
 .leaflet-bar a:hover {
   background: var(--panel-2) !important;
@@ -431,8 +427,8 @@ body.methods-active #map-wash {
   z-index: 6;
   width: 250px;
   max-width: calc(100vw - 32px);
-  background: var(--glass);
-  border: 1px solid var(--glass-brd);
+  background: var(--panel);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   backdrop-filter: blur(8px);
   overflow: hidden;
@@ -506,7 +502,7 @@ body.methods-active #map-wash {
 .legend-ticks {
   display: flex;
   justify-content: space-between;
-  color: var(--ink-dim);
+  color: var(--muted);
   font-family: var(--mono);
   font-size: 11px;
   margin-top: 4px;
@@ -516,7 +512,7 @@ body.methods-active #map-wash {
   flex: 0 0 auto;
 }
 .legend-note {
-  color: var(--ink-dim);
+  color: var(--muted);
   font-family: var(--mono);
   font-size: 10.5px;
   margin: 9px 0 0;
@@ -612,8 +608,8 @@ body.methods-active #map-wash {
   pointer-events: auto;
   width: var(--card-w);
   max-width: 100%;
-  background: var(--glass);
-  border: 1px solid var(--glass-brd);
+  background: var(--panel);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 26px 26px 24px;
   box-shadow: var(--shadow);
@@ -719,7 +715,7 @@ body.methods-active #map-wash {
   background: var(--illustration);
 }
 .about-body .snapshot-note {
-  color: var(--ink-dim);
+  color: var(--muted);
   font-size: 13px;
   line-height: 1.55;
   margin: 10px 0 0;
@@ -759,7 +755,7 @@ body.methods-active #map-wash {
 }
 .meta dd {
   margin: 0;
-  color: var(--ink-dim);
+  color: var(--muted);
   font-size: 13.5px;
   line-height: 1.5;
 }
@@ -770,7 +766,7 @@ body.methods-active #map-wash {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: var(--ink-dim);
+  color: var(--muted);
   font-family: var(--mono);
   font-size: 11px;
   letter-spacing: 0.12em;
@@ -799,7 +795,7 @@ body.methods-active #map-wash {
 /* about panel */
 .about {
   margin-top: 18px;
-  border-top: 1px solid var(--glass-brd);
+  border-top: 1px solid var(--border);
   padding-top: 12px;
 }
 .about summary {
@@ -810,7 +806,7 @@ body.methods-active #map-wash {
 }
 .about-body p {
   font-size: 13px;
-  color: var(--ink-dim);
+  color: var(--muted);
   line-height: 1.55;
   margin: 10px 0 0;
 }
@@ -896,13 +892,13 @@ body.methods-active #map-wash {
   border: 1px solid var(--border);
 }
 .leaflet-popup-close-button {
-  color: var(--ink-dim) !important;
+  color: var(--muted) !important;
 }
 .vessel-pop strong {
   color: var(--accent);
 }
 .vessel-pop .pop-note {
-  color: var(--ink-dim);
+  color: var(--muted);
   font-size: 11px;
 }
 
@@ -1136,5 +1132,135 @@ body.methods-active #map-wash {
   }
   .scroll-cue .arrow {
     animation: none;
+  }
+}
+
+/* ---- skip link (first focusable; visible only when focused) ---- */
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 20;
+  transform: translateY(-150%);
+  background: var(--panel);
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: var(--r-2);
+  box-shadow: var(--shadow);
+  padding: 10px 14px;
+  font: 600 13px/1 var(--sans);
+  text-decoration: none;
+}
+.skip-link:focus {
+  transform: none;
+}
+#story:focus {
+  outline: none; /* a skip target, not an interactive control */
+}
+/* focus-visible for any interactive controls not already covered */
+.about summary:focus-visible,
+.legend-collapse:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ---- print: turn the interactive piece into a clean linear field report ---- */
+@media print {
+  /* Force print-safe tokens regardless of the on-screen theme (light or dark). */
+  :root,
+  :root[data-theme='light'],
+  :root[data-theme='dark'] {
+    --paper: #fff;
+    --panel: #fff;
+    --panel-2: #f5f5f5;
+    --ink: #111;
+    --ink-2: #333;
+    --muted: #555;
+    --border: #ccc;
+    --border-2: #bbb;
+    --accent: #000;
+    --accent-ink: #fff;
+    --good: #1a6b3f;
+    --illustration: #8a5a10;
+    --critical: #a2322b;
+    --focus: #000;
+    --shadow: none;
+  }
+  #map,
+  #map-wash,
+  .basemap-toggle,
+  .theme-toggle,
+  .legend-panel,
+  .inspect-hint,
+  #inspect-sheet,
+  .card-handle,
+  .scroll-cue,
+  .skip-link,
+  .leaflet-control-container,
+  .leaflet-control-attribution {
+    display: none !important;
+  }
+  html,
+  body {
+    background: #fff;
+    color: #000;
+  }
+  .story {
+    position: static;
+  }
+  .step {
+    min-height: auto;
+    display: block;
+    padding: 0;
+    break-inside: avoid;
+  }
+  /* cards linearise into a stacked document (all visible, no fixed/animated state) */
+  .card {
+    position: static;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: none !important;
+    width: auto;
+    max-height: none;
+    overflow: visible;
+    margin: 0 0 18px;
+    border: 1px solid var(--border);
+    box-shadow: none;
+    break-inside: avoid;
+  }
+  a {
+    text-decoration: underline;
+  }
+  /* print the full provenance: reveal the collapsed <details> content */
+  details > *:not(summary) {
+    display: block !important;
+  }
+  details summary {
+    font-weight: 600;
+  }
+}
+
+/* ---- forced-colors (Windows High Contrast etc.): nothing must vanish ---- */
+@media (forced-colors: active) {
+  .card,
+  .legend-panel,
+  .basemap-toggle,
+  .theme-toggle,
+  .inspect-hint,
+  #inspect-sheet,
+  .card-handle,
+  .legend-badge {
+    border: 1px solid CanvasText;
+  }
+  :focus-visible,
+  .skip-link:focus {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+  /* the active ground isn't distinguishable by fill in forced-colors — give it an outline
+     (aria-pressed already conveys it to assistive tech; badges stay distinct by their text) */
+  .basemap-btn[aria-pressed='true'] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
   }
 }

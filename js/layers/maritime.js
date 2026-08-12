@@ -219,8 +219,9 @@ export const maritimeLayer = {
 
   start() {
     if (running) return;
-    // Note: the vessel drift is a subtle, continuous ambient animation, so (unlike the
-    // camera flyTo, which reduced-motion turns into an instant jump) it always runs.
+    // Respect reduced motion: the vessels still render (spread along the lanes) but don't
+    // drift — a static illustration rather than a continuous ambient animation.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     running = true;
     let last = performance.now();
     const tick = (now) => {

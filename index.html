@@ -8,6 +8,9 @@
       name="description"
       content="A scrolling data story showing what Singapore looks like from Earth-observation satellites — green cover, urban heat, and maritime traffic — and why the data matters."
     />
+    <!-- Match the mobile browser chrome to the theme (meta can't use CSS vars, so literals). -->
+    <meta name="theme-color" content="#f3f5f4" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0e1518" media="(prefers-color-scheme: dark)" />
     <!-- Apply a persisted theme choice before first paint so the page doesn't flash the
          system theme first. Kept inline + tiny on purpose; js/theme.js owns the rest. -->
     <script>
@@ -21,6 +24,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   </head>
   <body>
+    <!-- First focusable element: lets keyboard / AT users jump past the map to the story. -->
+    <a class="skip-link" href="#story">Skip to the story</a>
     <!-- Fixed map canvas behind the scrolling narrative -->
     <div
       id="map"
@@ -78,7 +83,7 @@
     </aside>
 
     <!-- Scrolling story -->
-    <main class="story">
+    <main class="story" id="story" tabindex="-1">
       <section class="step step--hero" data-id="hero">
         <div class="card card--hero">
           <p class="kicker">Earth Observation · Singapore</p>
