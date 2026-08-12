@@ -14,7 +14,7 @@
   <div id="map" aria-label="Interactive satellite map of Singapore" role="region"></div>
 
   <!-- Basemap toggle -->
-  <div id="basemap-toggle" class="basemap-toggle" role="radiogroup" aria-label="Satellite basemap"></div>
+  <div id="basemap-toggle" class="basemap-toggle" role="group" aria-label="Satellite basemap"></div>
 
   <!-- Legend (updates per section) -->
   <aside id="legend-panel" class="legend-panel" aria-live="polite" hidden>
@@ -79,8 +79,8 @@
           <summary>About the data</summary>
           <div class="about-body">
             <p><strong>Real imagery:</strong> the satellite basemap is genuine, free, public data — <a href="https://s2maps.eu" target="_blank" rel="noopener">EOX Sentinel-2 cloudless</a> (Copernicus Sentinel-2) and <a href="https://www.esri.com" target="_blank" rel="noopener">Esri World Imagery</a>.</p>
-            <p><strong>Real NDVI:</strong> the vegetation layer is genuine Sentinel-2 NDVI (10&nbsp;m, 28&nbsp;Jul&nbsp;2024, clouds &amp; water masked), computed from the free AWS Open Data Sentinel-2 L2A mirror — see <a href="docs/swap-instructions.md">docs/swap-instructions.md</a>.</p>
-            <p><strong>Illustrative overlays:</strong> the thermal and vessel layers are still <em>designed placeholders</em> that show how each product reads, each wired to accept real data via a one-line swap. Real sources: Landsat 8/9 thermal band (surface temperature), AIS transponder data (vessels).</p>
+            <p><strong>Real NDVI:</strong> the vegetation layer is genuine Sentinel-2 NDVI, computed from the free AWS Open Data Sentinel-2 L2A mirror (28&nbsp;Jul&nbsp;2024, clouds &amp; water masked). The source bands are <strong>10&nbsp;m</strong>; the exported overlay is that source resampled to <strong>~16&nbsp;m/px</strong> for display — not a 10&nbsp;m raster. See <a href="docs/swap-instructions.md">docs/swap-instructions.md</a>.</p>
+            <p><strong>Illustrations, not observations:</strong> the thermal and vessel layers are <em>designed placeholders</em>, clearly tagged in their legends, that show how each product reads — they are <strong>not</strong> measured data. Each is wired to accept real data via a one-line swap. Real sources: Landsat 8/9 Collection&nbsp;2 surface temperature, AIS transponder data.</p>
             <p class="credits">Basemaps © EOX IT Services GmbH · © Esri, Maxar, Earthstar Geographics · Contains modified Copernicus Sentinel data. Map rendering by Leaflet.</p>
           </div>
         </details>

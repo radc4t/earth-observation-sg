@@ -4,5 +4,8 @@
   "cloud": 14.808747,
   "red": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/48/N/UG/2024/7/S2B_48NUG_20240728_0_L2A/B04.tif",
   "nir": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/48/N/UG/2024/7/S2B_48NUG_20240728_0_L2A/B08.tif",
-  "scl": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/48/N/UG/2024/7/S2B_48NUG_20240728_0_L2A/SCL.tif"
+  "scl": "https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/48/N/UG/2024/7/S2B_48NUG_20240728_0_L2A/SCL.tif",
+  "sourceResolution": "10 m",
+  "displayResolution": "~16 m/px",
+  "outWidth": 3072
 }

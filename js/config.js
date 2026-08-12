@@ -9,6 +9,22 @@
 import { ndviLayer } from './layers/ndvi.js';
 import { thermalLayer } from './layers/thermal.js';
 import { maritimeLayer, VESSEL_TYPES } from './layers/maritime.js';
+import { LAYER_META } from './metadata.js';
+
+const M = LAYER_META;
+
+// Legend note for a REAL layer, and a prominent badge + note for an illustrative one —
+// all derived from js/metadata.js so wording can't drift from the About panel.
+function realNote(m, extra) {
+  return `<p class="legend-note">Real: ${m.source} · ${m.date} · ${m.sourceResolution} source, ` +
+    `${m.displayResolution} display${extra ? ' · ' + extra : ''}</p>`;
+}
+function illustrationTag(m) {
+  return `<p class="legend-badge">${m.badge}</p>`;
+}
+function illustrationNote(m) {
+  return `<p class="legend-note">${m.illustrationNote} · real source: ${m.realSource}</p>`;
+}
 
 const VIRIDIS_STOPS = ['#440154', '#3b528b', '#21918c', '#5ec962', '#fde725'];
 const INFERNO_STOPS = ['#000004', '#420a68', '#932667', '#dd513a', '#fca50a', '#fcffa4'];
@@ -62,9 +78,9 @@ export const SECTIONS = [
     camera: { center: [1.353, 103.79], zoom: 12.5, duration: 2 },
     layerConfig: { id: ndviLayer.id, sourceId: ndviLayer.sourceId, module: ndviLayer, visible: true },
     legendHTML:
-      '<h3>Vegetation index (NDVI)</h3>' +
-      rampSvg(VIRIDIS_STOPS, 'Bare / built', 'Dense canopy', 'ndvi') +
-      '<p class="legend-note">Real: Sentinel-2 NDVI · 28 Jul 2024 · clouds &amp; water masked</p>',
+      `<h3>${M.ndvi.title}</h3>` +
+      rampSvg(VIRIDIS_STOPS, M.ndvi.rampEnds[0], M.ndvi.rampEnds[1], 'ndvi') +
+      realNote(M.ndvi, 'clouds &amp; water masked'),
     copy: {
       title: 'How green is Singapore, really?',
       body:
@@ -83,9 +99,10 @@ export const SECTIONS = [
     camera: { center: [1.330, 103.76], zoom: 11.5, duration: 2 },
     layerConfig: { id: thermalLayer.id, sourceId: thermalLayer.sourceId, module: thermalLayer, visible: true },
     legendHTML:
-      '<h3>Land surface temperature</h3>' +
-      rampSvg(INFERNO_STOPS, 'Cooler', 'Hotter', 'thermal') +
-      '<p class="legend-note">Illustrative placeholder · real source: Landsat 8/9 thermal band</p>',
+      `<h3>${M.thermal.title}</h3>` +
+      illustrationTag(M.thermal) +
+      rampSvg(INFERNO_STOPS, M.thermal.rampEnds[0], M.thermal.rampEnds[1], 'thermal') +
+      illustrationNote(M.thermal),
     copy: {
       title: 'The city makes its own heat',
       body:
@@ -104,9 +121,10 @@ export const SECTIONS = [
     camera: { center: [1.205, 103.80], zoom: 11.5, duration: 2 },
     layerConfig: { id: maritimeLayer.id, sourceId: maritimeLayer.sourceId, module: maritimeLayer, visible: true },
     legendHTML:
-      '<h3>Vessel traffic</h3>' +
+      `<h3>${M.maritime.title}</h3>` +
+      illustrationTag(M.maritime) +
       vesselSwatches() +
-      '<p class="legend-note">Simulated tracks · real source: AIS transponder data</p>',
+      illustrationNote(M.maritime),
     copy: {
       title: 'One of the world’s busiest waterways',
       body:

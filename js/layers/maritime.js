@@ -157,6 +157,14 @@ export const maritimeLayer = {
 
   start() {
     if (running) return;
+    // Respect reduced-motion: place the vessels once on their lanes and don't animate.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      for (const v of vessels) {
+        const p = pointAt(laneMeta[v.laneIndex], v.t);
+        v.marker.setLatLng([p.lat, p.lng]);
+      }
+      return;
+    }
     running = true;
     let last = performance.now();
     const tick = (now) => {

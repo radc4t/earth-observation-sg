@@ -108,7 +108,9 @@ export function setBasemap(map, key) {
 
 export function getActiveBasemap() { return activeKey; }
 
-// Wire a two-button toggle in the given container element.
+// Wire a two-button basemap toggle in the given container element. Implemented as a pair
+// of toggle buttons (aria-pressed) rather than an ARIA radiogroup — simpler and truer to
+// how the control behaves, and it needs no custom arrow-key handling.
 export function registerBasemapToggle(map, container) {
   const buttons = new Map();
   Object.values(BASEMAPS).forEach((b) => {
@@ -116,13 +118,13 @@ export function registerBasemapToggle(map, container) {
     btn.className = 'basemap-btn';
     btn.type = 'button';
     btn.textContent = b.label;
-    btn.setAttribute('role', 'radio');
-    btn.setAttribute('aria-checked', String(activeKey === b.key));
+    btn.setAttribute('aria-label', `Basemap: ${b.label}`);
+    btn.setAttribute('aria-pressed', String(activeKey === b.key));
     if (activeKey === b.key) btn.classList.add('is-active');
     btn.addEventListener('click', () => {
       setBasemap(map, b.key);
       buttons.forEach((el, k) => {
-        el.setAttribute('aria-checked', String(k === b.key));
+        el.setAttribute('aria-pressed', String(k === b.key));
         el.classList.toggle('is-active', k === b.key);
       });
     });

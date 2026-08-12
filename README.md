@@ -15,13 +15,17 @@ locations as you scroll.
 - **Real basemap:** the satellite **basemap** is genuine, free, no-API-key public
   imagery — [EOX Sentinel-2 cloudless](https://s2maps.eu) (Copernicus Sentinel-2) and
   [Esri World Imagery](https://www.esri.com). Toggle between them, pan and zoom freely.
-- **Real NDVI:** the **vegetation layer is genuine Sentinel-2 NDVI** (10 m, 28 Jul 2024,
-  clouds & water masked), computed from the free AWS Open Data Sentinel-2 L2A mirror by
+- **Real NDVI:** the **vegetation layer is genuine Sentinel-2 NDVI** (28 Jul 2024, clouds
+  & water masked), computed from the free AWS Open Data Sentinel-2 L2A mirror by
   [`scripts/generate-placeholders/build_real_ndvi.py`](scripts/generate-placeholders/build_real_ndvi.py).
-- **Illustrative:** the **thermal and vessel overlays are still designed placeholders.**
-  They are shaped to read correctly (heat over the industrial west, ships along the
-  Strait) but are **not** real satellite products yet. Each is wired to accept real data
-  via a one-line swap — see [`docs/swap-instructions.md`](docs/swap-instructions.md).
+  The source bands are **10 m**; the exported overlay is that source resampled to
+  **~16 m/px** for display — it is *not* a 10 m raster (a single full-resolution PNG would
+  be far too large; a COG/XYZ tile pipeline is the path to true full-res, noted below).
+- **Illustrations, not observations:** the **thermal and vessel overlays are designed
+  placeholders**, tagged as such in their legends. They read correctly (heat over the
+  industrial west, ships along the Strait) but are **not** measured data. Each is wired to
+  accept real data via a one-line swap — see
+  [`docs/swap-instructions.md`](docs/swap-instructions.md).
 
 This honest separation is deliberate: it keeps the prototype truthful while the visual
 storytelling is proven, and shows exactly where real rasters/AIS drop in.

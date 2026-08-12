@@ -47,11 +47,12 @@ export function initScrolly(map, sections, opts = {}) {
     const size = map.getSize();
     const [lat, lng] = s.camera.center;
     // Guards: (a) an identical start/target centre makes Leaflet's flyTo divide by zero
-    // (NaN LatLng); (b) a zero-size / not-yet-laid-out map yields NaN in the animation.
-    // In either case jump instantly instead of animating.
+    // (NaN LatLng); (b) a zero-size / not-yet-laid-out map yields NaN in the animation;
+    // (c) the reader asked for reduced motion. In each case jump instantly, no animation.
     const sameCentre = Math.abs(cur.lat - lat) < 1e-6 && Math.abs(cur.lng - lng) < 1e-6;
     const notReady = !size || size.x === 0 || size.y === 0 || !Number.isFinite(cur.lat) || !Number.isFinite(cur.lng);
-    if (sameCentre || notReady) {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (sameCentre || notReady || reducedMotion) {
       map.setView(s.camera.center, s.camera.zoom, { animate: false });
     } else {
       map.flyTo(s.camera.center, s.camera.zoom, {

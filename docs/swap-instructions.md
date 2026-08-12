@@ -11,8 +11,8 @@ function. This guide covers the swap for each layer.
 
 ## 1. NDVI (vegetation) — `js/layers/ndvi.js`  ✅ already real
 
-**Live layer:** `assets/overlays/ndvi_real.png` — **genuine Sentinel-2 NDVI** (10 m,
-28 Jul 2024, clouds & water masked), built by
+**Live layer:** `assets/overlays/ndvi_real.png` — **genuine Sentinel-2 NDVI** (28 Jul 2024,
+clouds & water masked; 10 m source resampled to ~16 m/px for display), built by
 [`scripts/generate-placeholders/build_real_ndvi.py`](../scripts/generate-placeholders/build_real_ndvi.py).
 That script finds the least-cloudy Sentinel-2 L2A scene over Singapore via the free,
 keyless AWS Open Data mirror (Earth Search STAC), reads the red/NIR/SCL bands with

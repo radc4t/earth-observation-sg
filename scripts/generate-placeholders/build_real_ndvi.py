@@ -16,12 +16,18 @@ Pipeline:
   4. NDVI = (NIR - Red) / (NIR + Red); mask clouds/shadow/snow/nodata via SCL.
   5. Colourise with VIRIDIS_STOPS (kept in sync with js/config.js) and export a PNG.
 
+Resolution note: the Sentinel-2 red/NIR *source* bands are 10 m. The exported PNG is
+that source resampled to the display grid (OUT_W px over the bbox) — see DISPLAY_MPP,
+which the script prints and which js/metadata.js reports as `displayResolution`. The PNG
+must never be described as "10 m"; it is 10 m source at a coarser display resolution.
+
 Output: assets/overlays/ndvi_real.png  (+ prints the date/scene/bounds to wire in).
 Requires: rasterio, numpy, Pillow.
 """
 import io
 import os
 import json
+import math
 import urllib.request
 import numpy as np
 from PIL import Image
@@ -32,8 +38,14 @@ from rasterio import windows
 
 # ---- overlay geometry (MUST match BBOX in generate_overlays.py / the JS layer bounds)
 BBOX = dict(west=103.60, south=1.205, east=104.04, north=1.475)
-OUT_W = 1024
+# The bbox is ~49 km wide. OUT_W sets the DISPLAYED resolution: at 3072 px that is
+# ~16 m/px (the Sentinel-2 source bands are 10 m — see the displayed-vs-source note that
+# this script prints, and js/metadata.js `displayResolution`). Do not claim "10 m" for
+# the exported PNG; it is 10 m source resampled to the display grid.
+BBOX_WIDTH_M = 111320.0 * (BBOX["east"] - BBOX["west"]) * math.cos(math.radians(1.34))
+OUT_W = 3072
 OUT_H = int(round(OUT_W * (BBOX["north"] - BBOX["south"]) / (BBOX["east"] - BBOX["west"])))
+DISPLAY_MPP = BBOX_WIDTH_M / OUT_W
 OUT_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", "assets", "overlays"))
 
 # viridis stops — identical to generate_overlays.py and js/config.js (paired edit).
@@ -144,11 +156,22 @@ def main():
     rgba = np.dstack([rgb, alpha]).astype(np.uint8)
 
     out = os.path.join(OUT_DIR, "ndvi_real.png")
-    Image.fromarray(rgba).save(out)
+    # The image holds only ~256 distinct colours (viridis LUT + matching alpha), so a
+    # palettised PNG (FASTOCTREE keeps alpha) shrinks it ~5x with no visible loss.
+    img = Image.fromarray(rgba)
+    try:
+        img = img.quantize(colors=256, method=Image.Quantize.FASTOCTREE, dither=Image.Dither.NONE)
+    except Exception:
+        pass  # fall back to full RGBA if quantize is unavailable
+    img.save(out, optimize=True)
     print(f"Wrote {out}  ({OUT_W}x{OUT_H})")
+    print(f"Resolution: 10 m Sentinel-2 source, displayed at ~{DISPLAY_MPP:.0f} m/px "
+          f"({OUT_W}px over ~{BBOX_WIDTH_M/1000:.0f} km)")
     print("Leaflet bounds [[south,west],[north,east]]:",
           [[BBOX["south"], BBOX["west"]], [BBOX["north"], BBOX["east"]]])
-    print("Wire in js/layers/ndvi.js legend note as: 'Sentinel-2 NDVI ·", scene["dt"], "'")
+    scene["sourceResolution"] = "10 m"
+    scene["displayResolution"] = f"~{DISPLAY_MPP:.0f} m/px"
+    scene["outWidth"] = OUT_W
     json.dump(scene, open(os.path.join(os.path.dirname(__file__), "real_ndvi_scene.json"), "w"), indent=2)
 
 
