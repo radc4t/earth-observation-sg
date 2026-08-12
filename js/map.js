@@ -5,24 +5,16 @@
 // browser and embedded preview. For satellite imagery a flat, top-down view also reads
 // more truthfully than a tilted 3D one.
 //
-// Basemaps are REAL, free, no-API-key satellite imagery:
-//   - EOX Sentinel-2 cloudless : a real global cloudless Sentinel-2 mosaic (default).
-//   - Esri World Imagery       : very high-resolution aerial/satellite, for detail.
-// The data overlays (NDVI / thermal / maritime) are illustrative placeholders and live
-// in js/layers/*. See docs/swap-instructions.md.
+// Two grounds, both free and keyless:
+//   - EOX Sentinel-2 cloudless    : a real global cloudless Sentinel-2 mosaic (default).
+//   - Esri "World Light Gray Canvas" : a neutral reference basemap so the data can dominate.
+// The reader chooses between them; the story does not swap the ground on scroll.
+// See docs/swap-instructions.md.
 
 import { setState, subscribe } from './state.js';
 
 export const BASEMAPS = {
-  // Grey editorial ground — the calm Field-Report canvas the data chapters sit on.
-  esriLightGray: {
-    key: 'esriLightGray',
-    label: 'Grey canvas',
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-    attribution:
-      'Tiles © <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>, HERE, Garmin, © OpenStreetMap contributors, and the GIS user community',
-    maxNativeZoom: 16,
-  },
+  // Default true-colour ground.
   sentinel2: {
     key: 'sentinel2',
     label: 'Sentinel-2 cloudless',
@@ -31,17 +23,19 @@ export const BASEMAPS = {
       'Sentinel-2 cloudless © <a href="https://s2maps.eu" target="_blank" rel="noopener">EOX IT Services GmbH</a> (Contains modified Copernicus Sentinel data)',
     maxNativeZoom: 15,
   },
-  esri: {
-    key: 'esri',
-    label: 'Esri World Imagery',
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  // Neutral grey reference basemap — an alternative ground that lets the data dominate.
+  esriLightGray: {
+    key: 'esriLightGray',
+    label: 'Grey canvas',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
     attribution:
-      'Imagery © <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>, Maxar, Earthstar Geographics',
-    maxNativeZoom: 19,
+      'Tiles © <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>, HERE, Garmin, © OpenStreetMap contributors, and the GIS user community',
+    maxNativeZoom: 16,
   },
 };
 
-// Sentinel-2 opens the story (cinematic true colour); the chapters cross-fade to grey.
+// Sentinel-2 true colour is the default ground; the reader can switch to the grey canvas.
+// The story does not change the ground on scroll — the choice is the reader's.
 const DEFAULT_BASEMAP = 'sentinel2';
 
 // Leaflet uses [lat, lng]. Hero / default framing of the whole island.

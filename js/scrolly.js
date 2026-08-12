@@ -3,9 +3,8 @@
 // calls from fast scrolling are collapsed to the latest target via an isFlying guard.
 
 import { setState } from './state.js';
-import { setBasemap } from './map.js';
 
-// Evidence, then interpretation: the map transforms first (camera + basemap + overlay), then
+// Evidence, then interpretation: the map transforms first (camera + overlay), then
 // after a brief beat the story card rises. Tunable — re-time it once the real animation is on
 // screen. Set to 0 under reduced motion (the card appears with everything else).
 const CARD_REVEAL_DELAY_MS = 280;
@@ -40,14 +39,40 @@ export function initScrolly(map, sections, opts = {}) {
     setState({ overlays });
   }
 
+  let legendClearTimer = null;
   function updateLegend(section) {
     if (!legendEl) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (legendClearTimer) {
+      clearTimeout(legendClearTimer);
+      legendClearTimer = null;
+    }
     if (section.legendHTML) {
-      legendEl.innerHTML = section.legendHTML;
-      if (legendWrap) legendWrap.hidden = false;
+      const swapping =
+        legendWrap && legendWrap.classList.contains('is-shown') && legendEl.innerHTML;
+      if (swapping && !reduced) {
+        // Already visible with different content: dip the content out, swap, fade back in,
+        // so the key cross-fades rather than snapping to the new section's legend.
+        legendEl.classList.add('is-swapping');
+        legendClearTimer = setTimeout(() => {
+          legendEl.innerHTML = section.legendHTML;
+          legendEl.classList.remove('is-swapping');
+          legendClearTimer = null;
+        }, 160);
+      } else {
+        legendEl.innerHTML = section.legendHTML;
+        legendEl.classList.remove('is-swapping');
+      }
+      if (legendWrap) legendWrap.classList.add('is-shown'); // panel fades in via CSS
     } else if (legendWrap) {
-      legendWrap.hidden = true;
-      legendEl.innerHTML = '';
+      legendWrap.classList.remove('is-shown'); // panel fades out via CSS
+      // Clear the content only after the fade so it doesn't blank abruptly.
+      const clear = () => {
+        if (!legendWrap.classList.contains('is-shown')) legendEl.innerHTML = '';
+        legendClearTimer = null;
+      };
+      if (reduced) clear();
+      else legendClearTimer = setTimeout(clear, 350);
     }
   }
 
@@ -93,11 +118,11 @@ export function initScrolly(map, sections, opts = {}) {
     map.closePopup(); // dismiss any inspect / vessel popup from the previous section
     setState({ section: section.id });
 
-    // The map transforms first — overlay, legend, ground cross-fade and camera all dispatch
-    // now — so the reader sees the evidence change before the story card interprets it.
+    // The map transforms first — overlay, legend and camera all dispatch now — so the reader
+    // sees the evidence change before the story card interprets it. The basemap is the
+    // reader's choice and is intentionally left unchanged across sections.
     applyLayers(section);
     updateLegend(section);
-    if (section.basemap) setBasemap(map, section.basemap);
     scheduleFly();
 
     // Then the card rises, a beat later. Clear any pending reveal so fast scrolling can't

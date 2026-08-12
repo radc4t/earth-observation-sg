@@ -155,6 +155,31 @@ function laneLatLngs(spine) {
   return spine.map(([lng, lat]) => [lat, lng]);
 }
 
+// Draw each lane as a haloed dashed line: a dark casing (reads on the light grey canvas)
+// under a light core (reads on the dark satellite imagery), so the lanes stay visible on
+// whichever basemap the reader chooses. Both strokes share the dash pattern so the dashes
+// line up. Replaces the lanes currently in `group`.
+function drawLanes(group, spines) {
+  group.clearLayers();
+  spines.forEach((s) => {
+    const pts = laneLatLngs(s);
+    L.polyline(pts, {
+      color: '#0b1622',
+      weight: 3.4,
+      opacity: 0.4,
+      dashArray: '2 6',
+      interactive: false,
+    }).addTo(group);
+    L.polyline(pts, {
+      color: '#cfeaf6',
+      weight: 1.3,
+      opacity: 0.85,
+      dashArray: '2 6',
+      interactive: false,
+    }).addTo(group);
+  });
+}
+
 export const maritimeLayer = {
   id: 'vessels',
   key: 'maritime',
@@ -164,15 +189,7 @@ export const maritimeLayer = {
     if (laneGroup) return;
     laneMeta = LANE_SPINES.map(measureLane);
     laneGroup = L.layerGroup();
-    LANE_SPINES.forEach((s) => {
-      L.polyline(laneLatLngs(s), {
-        color: '#7dd3fc',
-        weight: 1.2,
-        opacity: 0.35,
-        dashArray: '2 6',
-        interactive: false,
-      }).addTo(laneGroup);
-    });
+    drawLanes(laneGroup, LANE_SPINES);
     vesselGroup = L.layerGroup();
     buildVessels(map, 25);
 
@@ -244,16 +261,7 @@ export const maritimeLayer = {
     if (!lines.length) return;
     LANE_SPINES = lines.map((f) => f.geometry.coordinates);
     laneMeta = LANE_SPINES.map(measureLane);
-    laneGroup.clearLayers();
-    LANE_SPINES.forEach((s) => {
-      L.polyline(laneLatLngs(s), {
-        color: '#7dd3fc',
-        weight: 1.2,
-        opacity: 0.35,
-        dashArray: '2 6',
-        interactive: false,
-      }).addTo(laneGroup);
-    });
+    drawLanes(laneGroup, LANE_SPINES);
     vesselGroup.clearLayers();
     vessels = [];
     lines.forEach((f, i) => {

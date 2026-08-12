@@ -79,9 +79,6 @@ export const SECTIONS = [
   {
     id: 'hero',
     kind: 'hero',
-    // The story opens on cinematic true-colour Sentinel-2, then cross-fades to the grey
-    // editorial ground for the data chapters (optional presentation field, read by scrolly).
-    basemap: 'sentinel2',
     camera: { center: [1.352, 103.82], zoom: 11, duration: 2.4 },
     layerConfig: null,
     legendHTML: '',
@@ -95,7 +92,6 @@ export const SECTIONS = [
   {
     id: 'vegetation',
     kind: 'section',
-    basemap: 'esriLightGray',
     // Vegetation and heat share one camera (whole-island framing) so scrolling between
     // them cross-fades the NDVI and temperature layers in place — no zoom/pan jump.
     camera: { center: [1.35, 103.8], zoom: 12, duration: 2 },
@@ -124,7 +120,6 @@ export const SECTIONS = [
   {
     id: 'heat',
     kind: 'section',
-    basemap: 'esriLightGray',
     // Same camera as vegetation (see note there) — the layers swap without moving the map.
     camera: { center: [1.35, 103.8], zoom: 12, duration: 2 },
     layerConfig: {
@@ -152,7 +147,6 @@ export const SECTIONS = [
   {
     id: 'maritime',
     kind: 'section',
-    basemap: 'esriLightGray',
     // Same longitude as heat, so the move to the Strait is a smooth vertical glide south
     // (a slightly longer duration eases the bigger jump down to the ships).
     camera: { center: [1.205, 103.8], zoom: 11.5, duration: 2.6 },
@@ -182,7 +176,6 @@ export const SECTIONS = [
   {
     id: 'outro',
     kind: 'outro',
-    basemap: 'esriLightGray',
     camera: { center: [1.352, 103.82], zoom: 10.5, duration: 2.2 },
     layerConfig: null,
     legendHTML: '',

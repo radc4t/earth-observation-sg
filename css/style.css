@@ -310,6 +310,9 @@ body {
 }
 
 /* ---- legend ---- */
+/* The panel fades/rises in when a section has a legend (JS toggles .is-shown) instead of
+   snapping via [hidden]. Hidden state keeps it in the DOM (for the aria-live announcement)
+   but non-interactive. */
 .legend-panel {
   position: fixed;
   top: 16px;
@@ -322,6 +325,33 @@ body {
   border-radius: var(--radius);
   backdrop-filter: blur(8px);
   overflow: hidden;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease,
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
+}
+.legend-panel.is-shown {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+/* content cross-fade when swapping between two sections' legends */
+.legend {
+  transition: opacity 0.16s ease;
+}
+.legend.is-swapping {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .legend-panel,
+  .legend {
+    transition: none;
+  }
 }
 .legend-collapse {
   width: 100%;

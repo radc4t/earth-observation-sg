@@ -37,8 +37,8 @@
       ☾
     </button>
 
-    <!-- Legend (updates per section) -->
-    <aside id="legend-panel" class="legend-panel" aria-live="polite" hidden>
+    <!-- Legend (updates per section; visibility handled by the .is-shown class + a fade) -->
+    <aside id="legend-panel" class="legend-panel" aria-live="polite">
       <button
         id="legend-collapse"
         class="legend-collapse"
@@ -168,9 +168,11 @@
                 <a href="https://s2maps.eu" target="_blank" rel="noopener"
                   >EOX Sentinel-2 cloudless</a
                 >
-                (Copernicus Sentinel-2) and
-                <a href="https://www.esri.com" target="_blank" rel="noopener">Esri World Imagery</a
-                >.
+                (Copernicus Sentinel-2). A neutral
+                <a href="https://www.esri.com" target="_blank" rel="noopener"
+                  >Esri light-grey reference basemap</a
+                >
+                is also available, to let the data stand out.
               </p>
               <!-- Per-layer provenance is generated from js/metadata.js (single source of truth). -->
               <div id="about-data"></div>
@@ -182,8 +184,8 @@
                 <a href="docs/swap-instructions.md">docs/swap-instructions.md</a>.
               </p>
               <p class="credits">
-                Basemaps © EOX IT Services GmbH · © Esri, Maxar, Earthstar Geographics · Contains
-                modified Copernicus Sentinel data. Map rendering by Leaflet.
+                Basemaps © EOX IT Services GmbH · © Esri, HERE, Garmin, © OpenStreetMap contributors
+                · Contains modified Copernicus Sentinel data. Map rendering by Leaflet.
               </p>
             </div>
           </details>
