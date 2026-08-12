@@ -36,17 +36,25 @@ async function main() {
     logLevel: 'info',
   });
 
-  // 2. CSS minify.
+  // 2. CSS minify. The `file` loader copies each @font-face woff2 into dist/ with a
+  //    content-hashed name and rewrites its url() to a CSS-relative path, so the
+  //    self-hosted fonts resolve correctly under the Pages sub-path (not just at root).
   await build({
     entryPoints: [resolve(root, 'css/style.css')],
     bundle: true,
     minify: true,
+    loader: { '.woff2': 'file' },
     outfile: resolve(dist, 'style.min.css'),
     logLevel: 'info',
   });
 
-  // 3. Copy runtime assets (the overlay PNGs the app fetches).
-  await cp(resolve(root, 'assets'), resolve(dist, 'assets'), { recursive: true });
+  // 3. Copy runtime assets (the overlay PNGs the app fetches). Skip assets/fonts —
+  //    esbuild's file loader (step 2) already emitted hashed copies referenced by the CSS,
+  //    so copying the originals too would ship them twice.
+  await cp(resolve(root, 'assets'), resolve(dist, 'assets'), {
+    recursive: true,
+    filter: (src) => !src.replace(/\\/g, '/').includes('/assets/fonts'),
+  });
 
   // 4. Emit dist/index.html pointing at the built files (Leaflet CDN tags kept as-is,
   //    and the CDN <script> stays above the module bundle so window.L loads first).

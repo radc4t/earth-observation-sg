@@ -1,13 +1,107 @@
+/* Self-hosted type (all SIL OFL 1.1). Separate woff2 files — esbuild's file loader
+   rewrites these URLs for the production build. font-display:swap renders text immediately. */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/source-serif-4-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Source Serif 4';
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/source-serif-4-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/inter-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/inter-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-weight: 500;
+  font-display: swap;
+  src: url('../assets/fonts/ibm-plex-mono-500.woff2') format('woff2');
+}
+
+/* ---- Field Report design tokens ----
+   Phase 1 establishes the token system in the DARK baseline (matches the approved
+   dark-parity mockup). The light theme is staged below but dormant until Phase 2 adds
+   the grey basemap + theme toggle. Data ramps (viridis/inferno) live in js/ramps.js and
+   stay the only vivid colour. */
 :root {
-  --bg: #0b1622;
-  --ink: #eef4fb;
-  --ink-dim: #9fb2c6;
-  --glass: rgba(11, 22, 34, 0.82);
-  --glass-brd: rgba(125, 211, 252, 0.22);
-  --accent: #7dd3fc;
-  --card-w: 420px;
-  --radius: 14px;
+  --paper: #0e1518;
+  --panel: #141d21;
+  --panel-2: #1a252a;
+  --ink: #eaf1f0;
+  --ink-2: #b7c4c4;
+  --muted: #7e8e8e;
+  --border: #24312f;
+  --border-2: #33433f;
+  --accent: #4fb3c4;
+  --accent-ink: #05161a;
+  --accent-weak: rgba(79, 179, 196, 0.14);
+  --good: #55c08a;
+  --illustration: #e0a34a;
+  --critical: #e27a7a;
+  --focus: #4fb3c4;
+  --shadow: 0 12px 34px rgba(0, 0, 0, 0.5);
+
+  /* type roles */
+  --serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* spacing (4px base) + radius scales */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 48px;
+  --r-1: 6px;
+  --r-2: 8px;
+  --r-3: 12px;
+  --r-4: 16px;
+
+  /* back-compat aliases: existing component rules adopt the new system with no churn */
+  --bg: var(--paper);
+  --glass: var(--panel);
+  --glass-brd: var(--border);
+  --ink-dim: var(--muted);
+  --card-w: 404px;
+  --radius: var(--r-4);
+
   font-synthesis: none;
+}
+
+/* Light theme — staged for Phase 2; dormant until a toggle sets data-theme="light". */
+:root[data-theme='light'] {
+  --paper: #f3f5f4;
+  --panel: #ffffff;
+  --panel-2: #eef1f0;
+  --ink: #14191b;
+  --ink-2: #3a464b;
+  --muted: #65727a;
+  --border: #d6dddb;
+  --border-2: #bec8c6;
+  --accent: #0e5a6b;
+  --accent-ink: #ffffff;
+  --accent-weak: rgba(14, 90, 107, 0.09);
+  --good: #2f8f5b;
+  --illustration: #b7791f;
+  --critical: #b23a3a;
+  --focus: #0e5a6b;
+  --shadow: 0 10px 34px rgba(20, 40, 45, 0.14);
 }
 
 * {
@@ -20,15 +114,7 @@ body {
   padding: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family:
-    'Inter',
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
+  font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -97,7 +183,7 @@ body {
 }
 .basemap-btn.is-active {
   background: var(--accent);
-  color: #06121e;
+  color: var(--accent-ink);
   font-weight: 600;
 }
 .basemap-btn:focus-visible {
@@ -125,8 +211,11 @@ body {
   border: 0;
   background: transparent;
   color: var(--ink);
-  font: 600 12px/1 inherit;
-  letter-spacing: 0.04em;
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 12px 14px 8px;
   cursor: pointer;
@@ -136,7 +225,9 @@ body {
 }
 .legend h3 {
   margin: 4px 0 10px;
-  font-size: 14px;
+  font-size: 14.5px;
+  font-family: var(--serif);
+  font-weight: 600;
 }
 .legend-ramp {
   margin: 8px 0 6px;
@@ -146,17 +237,20 @@ body {
   display: flex;
   justify-content: space-between;
   color: var(--ink-dim);
+  font-family: var(--mono);
   font-size: 11px;
   margin-top: 4px;
+  font-variant-numeric: tabular-nums;
 }
 .legend-ticks span {
   flex: 0 0 auto;
 }
 .legend-note {
   color: var(--ink-dim);
-  font-size: 11px;
+  font-family: var(--mono);
+  font-size: 10.5px;
   margin: 8px 0 0;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 /* prominent "Illustration"/"Simulation" tag so a placeholder is never read as real data */
 .legend-badge {
@@ -164,16 +258,17 @@ body {
   margin: 0 0 8px;
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(251, 191, 36, 0.16);
-  color: #fbbf24;
-  border: 1px solid rgba(251, 191, 36, 0.4);
+  background: color-mix(in srgb, var(--illustration) 16%, transparent);
+  color: var(--illustration);
+  border: 1px solid color-mix(in srgb, var(--illustration) 42%, transparent);
+  font-family: var(--mono);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .legend-unavailable {
-  color: #fca5a5;
+  color: var(--critical);
   font-size: 11.5px;
   margin: 8px 0 0;
 }
@@ -249,26 +344,33 @@ body {
 .kicker {
   margin: 0 0 10px;
   color: var(--accent);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
 }
 .card h1 {
   margin: 0 0 14px;
+  font-family: var(--serif);
+  font-weight: 600;
   font-size: clamp(30px, 5vw, 46px);
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+  line-height: 1.06;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
 }
 .card h2 {
   margin: 0 0 12px;
+  font-family: var(--serif);
+  font-weight: 600;
   font-size: clamp(23px, 3.4vw, 31px);
-  line-height: 1.1;
-  letter-spacing: -0.01em;
+  line-height: 1.12;
+  letter-spacing: -0.006em;
+  text-wrap: balance;
 }
 .card p {
   margin: 0 0 14px;
-  color: #dbe7f3;
+  color: var(--ink-2);
   font-size: 15.5px;
   line-height: 1.6;
 }
@@ -283,9 +385,10 @@ body {
 .card .datatag {
   margin: -6px 0 14px;
   color: var(--ink-dim);
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 .about-body .snapshot-note {
@@ -295,7 +398,7 @@ body {
   margin: 10px 0 0;
 }
 .about-body .snapshot-note strong {
-  color: #dbe7f3;
+  color: var(--ink);
 }
 
 .meta {
@@ -312,9 +415,10 @@ body {
 .meta dt {
   margin: 0;
   color: var(--accent);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
 }
 .meta dd {
@@ -331,8 +435,9 @@ body {
   align-items: center;
   gap: 10px;
   color: var(--ink-dim);
-  font-size: 12px;
-  letter-spacing: 0.08em;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 .scroll-cue .arrow {
@@ -383,7 +488,7 @@ body {
 
 /* vessel popup (Leaflet) */
 .leaflet-popup-content-wrapper {
-  background: #0b1622;
+  background: var(--panel);
   color: var(--ink);
   border: 1px solid var(--glass-brd);
   border-radius: 10px;
@@ -394,7 +499,7 @@ body {
   margin: 10px 12px;
 }
 .leaflet-popup-tip {
-  background: #0b1622;
+  background: var(--panel);
   border: 1px solid var(--glass-brd);
 }
 .leaflet-popup-close-button {
