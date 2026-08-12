@@ -43,6 +43,13 @@
       <span class="rt" aria-hidden="true"></span>Click the map to read a value
     </div>
 
+    <!-- Mobile inspector reading (bottom sheet). Desktop uses the anchored Leaflet popup;
+         inspect.js fills whichever is appropriate. Announcements stay on #inspect-live. -->
+    <div id="inspect-sheet" class="inspect-sheet" hidden>
+      <button class="inspect-sheet-close" type="button" aria-label="Close reading">×</button>
+      <div class="inspect-sheet-body inspect-readout"></div>
+    </div>
+
     <!-- Basemap toggle -->
     <div
       id="basemap-toggle"

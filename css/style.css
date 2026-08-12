@@ -953,41 +953,178 @@ body.methods-active #map-wash {
   color: var(--accent);
 }
 
+/* The card grab-handle and the mobile inspector sheet exist only on mobile (mobile.js injects
+   the handle into every card; inspect.js fills the sheet). Hidden on desktop. */
+.card-handle {
+  display: none;
+}
+.inspect-sheet {
+  display: none;
+}
+
 /* ---- responsive / mobile ---- */
+/* Refine the fixed-map + bottom-sheet pattern (engine untouched). The map stays the fixed,
+   full-screen "sticky" layer; each story card becomes a bottom sheet that updates as the
+   invisible 100vh steps scroll past. Explore mode minimises the sheet to a handle so the map
+   can be panned/read. All rules here are ≤760px, so desktop is unaffected. */
 @media (max-width: 760px) {
   :root {
     --card-w: 100%;
   }
+  /* steps are now transparent scroll-triggers; the card is positioned by fixed, below */
   .step {
-    align-items: flex-end;
-    padding: 0 12px 14px;
+    padding: 0;
     min-height: 100vh;
   }
-  .step--hero {
-    align-items: flex-end;
-  }
+
+  /* --- bottom-sheet card --- */
   .card {
-    padding: 18px 18px 18px;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    /* small-viewport units + fallback so browser chrome can't make it full-screen;
+       keeps ≥ ~38vh of map visible in normal mode */
+    max-height: min(62vh, 62svh);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--r-4) var(--r-4) 0 0;
+    border-bottom: 0;
+    padding: 0 18px calc(18px + env(safe-area-inset-bottom));
+    box-shadow: 0 -10px 34px rgba(0, 0, 0, 0.22);
+    /* Only the active sheet shows/interacts. Use visibility (not just opacity) so the
+       fixed-stacked cards don't all pile up when reduced-motion forces opacity:1. */
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(16px);
   }
-  .card--hero {
+  .step.is-active .card {
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+  .card--hero,
+  .card--methods {
     width: 100%;
   }
+  /* Explore (peek): the active sheet slides down to reveal the full map, leaving the handle. */
+  body.map-explore .step.is-active .card {
+    transform: translateY(calc(100% - 46px));
+  }
+
+  /* sticky grab handle (injected into each card by mobile.js) — the Explore/close control */
+  .card-handle {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    width: calc(100% + 36px);
+    margin: 0 -18px 8px;
+    padding: 9px 0;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+    cursor: pointer;
+  }
+  .card-handle-grip {
+    width: 36px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--border-2);
+  }
+  .card-handle-label {
+    font: 500 10.5px/1 var(--mono);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .card-handle:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: -2px;
+  }
+
   .meta div {
     grid-template-columns: 1fr;
     gap: 2px;
   }
-  .legend-panel {
-    top: auto;
-    bottom: 14px;
-    right: 14px;
-    left: 14px;
-    width: auto;
+
+  /* The desktop "Click the map to read a value" hint is redundant on mobile (the flow is
+     Explore → tap → reading sheet) and would overlap the bottom sheet — hide it. */
+  .inspect-hint {
+    display: none;
   }
+
+  /* --- legend: compact panel top-right (below the theme toggle), no bottom collision --- */
+  .legend-panel {
+    top: 60px;
+    right: 12px;
+    left: auto;
+    bottom: auto;
+    width: 208px;
+    max-width: 62vw;
+  }
+  .legend {
+    /* keep the expanded panel within the map peek so it can't cover the card or, in
+       explore+read, the reading sheet; scrolls internally if a legend is taller */
+    max-height: 32vh;
+    overflow-y: auto;
+  }
+
+  /* --- chrome: basemap top-left, theme top-right (its own rule), legend under it --- */
   .basemap-toggle {
     top: 12px;
     left: 12px;
-    right: 12px;
-    justify-content: center;
+    right: auto;
+    max-width: calc(100vw - 68px); /* leave room for the theme toggle */
+    overflow: hidden;
+  }
+
+  /* --- inspector reading as a bottom sheet (instead of the anchored popup) --- */
+  .inspect-sheet {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 7; /* above the story sheet */
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    border-radius: var(--r-4) var(--r-4) 0 0;
+    box-shadow: 0 -10px 34px rgba(0, 0, 0, 0.28);
+    padding: 16px 18px calc(16px + env(safe-area-inset-bottom));
+    transform: translateY(110%);
+    transition: transform 0.28s ease;
+  }
+  .inspect-sheet.is-shown {
+    transform: translateY(0);
+  }
+  .inspect-sheet-close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 20px;
+    line-height: 1;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+  .inspect-sheet-close:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .inspect-sheet {
+      transition: none;
+    }
+    body.map-explore .step.is-active .card {
+      transition: none;
+    }
   }
 }
 

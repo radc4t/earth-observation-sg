@@ -13,6 +13,10 @@ import { state, subscribe } from './state.js';
 import { LAYER_META } from './metadata.js';
 
 const INSPECTABLE = ['ndvi', 'thermal'];
+// A finger drag that ends on the map must not read a value — only a genuine tap. Tunable;
+// validate on the real 375px experience.
+const TAP_MOVE_THRESHOLD_PX = 10;
+const mobileMQ = window.matchMedia('(max-width: 760px)');
 
 function fmtCoord(latlng) {
   const ns = latlng.lat >= 0 ? 'N' : 'S';
@@ -24,9 +28,20 @@ function fmtCoord(latlng) {
 export function initInspect(map, inspectables) {
   const liveEl = document.getElementById('inspect-live');
   const hintEl = document.getElementById('inspect-hint');
+  const sheetEl = document.getElementById('inspect-sheet');
+  const sheetBody = sheetEl && sheetEl.querySelector('.inspect-sheet-body');
   const mapEl = map.getContainer();
 
   const activeKeys = () => Object.keys(inspectables).filter((k) => state.overlays[k]);
+
+  // Close whichever renderer is open (desktop popup and/or the mobile sheet).
+  function closeReadout() {
+    map.closePopup();
+    if (sheetEl) {
+      sheetEl.classList.remove('is-shown');
+      sheetEl.hidden = true;
+    }
+  }
 
   function readoutRow(k, res, latlng) {
     const m = LAYER_META[k];
@@ -63,21 +78,75 @@ export function initInspect(map, inspectables) {
     liveEl.textContent = `${m.title}: ${res.value}${unit ? ' ' + unit : ''}${cls}, at ${coord}.`;
   }
 
-  // The single interaction path for both mouse and keyboard.
+  // The single interaction path for both mouse and keyboard. Same readoutRow() content on both
+  // platforms — mobile renders it into the bottom sheet, desktop into the anchored Leaflet popup.
   function inspectAt(latlng) {
     const keys = activeKeys();
     if (keys.length === 0) return; // nothing readable here — stay silent
     const results = keys.map((k) => ({ k, res: inspectables[k].inspect(latlng) }));
-    L.popup({ offset: [0, -2], className: 'inspect-popup' })
-      .setLatLng(latlng)
-      .setContent(
-        `<div class="inspect-readout">${results.map(({ k, res }) => readoutRow(k, res, latlng)).join('')}</div>`
-      )
-      .openOn(map);
+    const rowsHtml = results.map(({ k, res }) => readoutRow(k, res, latlng)).join('');
+    if (mobileMQ.matches && sheetEl && sheetBody) {
+      sheetBody.innerHTML = rowsHtml; // sheetBody already carries the .inspect-readout class
+      sheetEl.hidden = false;
+      // Force a reflow so the hidden (translated-down) state is committed, then reveal — the
+      // slide-up transitions reliably without depending on requestAnimationFrame timing.
+      void sheetEl.offsetHeight;
+      sheetEl.classList.add('is-shown');
+    } else {
+      L.popup({ offset: [0, -2], className: 'inspect-popup' })
+        .setLatLng(latlng)
+        .setContent(`<div class="inspect-readout">${rowsHtml}</div>`)
+        .openOn(map);
+    }
     announce(results[0].k, results[0].res, latlng); // one overlay is active at a time
   }
 
-  map.on('click', (e) => inspectAt(e.latlng));
+  // Scroll-vs-tap: a drag that ends on the map (scrolling the story, or panning) must not read a
+  // value. Track touch movement and skip the resulting click when it exceeds the threshold.
+  let touchStart = null;
+  let touchMoved = 0;
+  mapEl.addEventListener(
+    'touchstart',
+    (e) => {
+      const t = e.touches[0];
+      touchStart = { x: t.clientX, y: t.clientY };
+      touchMoved = 0;
+    },
+    { passive: true }
+  );
+  mapEl.addEventListener(
+    'touchmove',
+    (e) => {
+      if (!touchStart) return;
+      const t = e.touches[0];
+      touchMoved = Math.max(
+        touchMoved,
+        Math.hypot(t.clientX - touchStart.x, t.clientY - touchStart.y)
+      );
+    },
+    { passive: true }
+  );
+  map.on('click', (e) => {
+    if (touchMoved > TAP_MOVE_THRESHOLD_PX) {
+      touchMoved = 0;
+      return; // a scroll/pan gesture, not a tap
+    }
+    inspectAt(e.latlng);
+  });
+
+  // Mobile sheet close button — dismisses the reading only; it does NOT change the Explore state
+  // (that state is owned by mobile.js), so the reader stays in explore mode over the map.
+  if (sheetEl) {
+    const closeBtn = sheetEl.querySelector('.inspect-sheet-close');
+    if (closeBtn) closeBtn.addEventListener('click', closeReadout);
+  }
+
+  // Breakpoint safety: if the viewport crosses 760px while a reading is open, close the current
+  // renderer rather than migrating it live. Only closes the readout — never touches map-explore.
+  mobileMQ.addEventListener('change', () => {
+    closeReadout();
+    if (liveEl) liveEl.textContent = '';
+  });
 
   // Keyboard: Enter (primary) / R (optional) sample the map CENTRE. Only these two keys are
   // handled and preventDefault'd, so Leaflet keeps its own arrow-pan / +- zoom behaviour.
@@ -96,7 +165,7 @@ export function initInspect(map, inspectables) {
     mapEl.classList.toggle('is-inspectable', inspectable);
     if (hintEl) hintEl.classList.toggle('is-shown', inspectable);
     if (!inspectable) {
-      map.closePopup();
+      closeReadout();
       if (liveEl) liveEl.textContent = '';
     }
   }

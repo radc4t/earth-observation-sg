@@ -8,6 +8,7 @@ import { initScrolly } from './scrolly.js';
 import { methodsHTML } from './metadata.js';
 import { initInspect } from './inspect.js';
 import { registerThemeToggle } from './theme.js';
+import { initMobile } from './mobile.js';
 import { RAMPS, rampGradientCss } from './ramps.js';
 import { ndviLayer } from './layers/ndvi.js';
 import { thermalLayer } from './layers/thermal.js';
@@ -28,6 +29,8 @@ registerThemeToggle(document.getElementById('theme-toggle'));
 const story = initScrolly(map, SECTIONS, { onLayerError });
 // Click the map to read the NDVI / temperature value under the cursor.
 initInspect(map, { ndvi: ndviLayer, thermal: thermalLayer });
+// Mobile bottom-sheet "Explore map" behaviour (no-op on desktop).
+initMobile(map);
 
 // Field-report card swatches: tint each real chapter's date-stamp chip with its own overlay
 // ramp (keyed by section id, not DOM order) so overlay, legend and card all share one source.
