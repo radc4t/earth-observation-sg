@@ -22,7 +22,24 @@
   </head>
   <body>
     <!-- Fixed map canvas behind the scrolling narrative -->
-    <div id="map" aria-label="Interactive satellite map of Singapore" role="region"></div>
+    <div
+      id="map"
+      aria-label="Interactive satellite map of Singapore"
+      role="region"
+      tabindex="0"
+      aria-describedby="inspect-help"
+    ></div>
+    <p id="inspect-help" class="sr-only">
+      Click the map to read a value at that point, or press Enter to read the value at the map
+      centre. Press R to read again.
+    </p>
+    <!-- Concise reading announced to assistive tech on each sample -->
+    <div id="inspect-live" class="sr-only" aria-live="polite"></div>
+
+    <!-- "read a value" affordance — shown only on sections with an inspectable raster -->
+    <div id="inspect-hint" class="inspect-hint" aria-hidden="true">
+      <span class="rt" aria-hidden="true"></span>Click the map to read a value
+    </div>
 
     <!-- Basemap toggle -->
     <div
