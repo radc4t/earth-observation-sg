@@ -86,7 +86,70 @@ export function initScrolly(map, sections, opts = {}) {
   }
 
   let legendClearTimer = null;
-  function updateLegend(section) {
+
+  // --- Legend cross-fade morph (Vegetation <-> Heat: same place, different instrument) ---------
+  // A frozen copy of the outgoing legend ("ghost") is overlaid on #legend and the two cross-fade,
+  // so the viridis ramp dissolves into the inferno ramp in step with the map's raster cross-
+  // dissolve — instead of the content blinking. morphLegend() owns ONLY the visual transition;
+  // updateLegend() still owns the semantic legend content/state.
+  let morphGhost = null;
+  let morphTimer = null;
+  // Idempotent: safe to call repeatedly (rapid Veg->Heat->Veg) and always fully resets, so a
+  // cancelled transition can never leave the panel stuck at a stale inline height.
+  function clearMorph() {
+    if (morphTimer) {
+      clearTimeout(morphTimer);
+      morphTimer = null;
+    }
+    if (morphGhost) {
+      morphGhost.remove();
+      morphGhost = null;
+    }
+    legendEl.classList.remove('is-morphing', 'is-morph-in');
+    if (legendWrap) {
+      legendWrap.classList.remove('is-morphing');
+      legendWrap.style.height = '';
+    }
+  }
+  function morphLegend(newHTML) {
+    clearMorph();
+    // Snapshot the OLD geometry BEFORE any content is replaced (the ghost is the old legend's
+    // exact box — NDVI and thermal legends can differ in height, so never re-measure after swap).
+    const lr = legendEl.getBoundingClientRect();
+    const pr = legendWrap.getBoundingClientRect();
+    const oldPanelH = pr.height;
+    const ghost = document.createElement('div');
+    ghost.className = 'legend legend-ghost';
+    ghost.setAttribute('aria-hidden', 'true'); // only ONE live legend is exposed to AT
+    ghost.innerHTML = legendEl.innerHTML;
+    ghost.style.left = `${lr.left - pr.left}px`;
+    ghost.style.top = `${lr.top - pr.top}px`;
+    ghost.style.width = `${lr.width}px`;
+    ghost.style.height = `${lr.height}px`;
+    legendWrap.appendChild(ghost);
+    morphGhost = ghost;
+    // Swap in the new content transparent, on the long (panel) transition.
+    legendEl.innerHTML = newHTML;
+    legendEl.classList.add('is-morphing', 'is-morph-in');
+    // Keep the box stable: hold the old panel height, then ease it to the new content's height.
+    // Height is the ONLY dimension that changes; width is fixed by the panel.
+    legendWrap.classList.add('is-morphing');
+    const newPanelH = legendWrap.getBoundingClientRect().height;
+    const easeHeight = Math.abs(newPanelH - oldPanelH) > 0.5;
+    if (easeHeight) legendWrap.style.height = `${oldPanelH}px`;
+    void legendEl.offsetHeight; // commit the transparent start + held height before the fade
+    requestAnimationFrame(() => {
+      legendEl.classList.remove('is-morph-in'); // new -> opacity 1
+      ghost.classList.add('is-out'); // old -> opacity 0
+      if (easeHeight) legendWrap.style.height = `${newPanelH}px`;
+    });
+    morphTimer = setTimeout(() => {
+      morphTimer = null;
+      clearMorph();
+    }, MOTION.durPanel + 80);
+  }
+
+  function updateLegend(section, opts = {}) {
     if (!legendEl) return;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (legendClearTimer) {
@@ -96,9 +159,12 @@ export function initScrolly(map, sections, opts = {}) {
     if (section.legendHTML) {
       const swapping =
         legendWrap && legendWrap.classList.contains('is-shown') && legendEl.innerHTML;
-      if (swapping && !reduced) {
-        // Already visible with different content: dip the content out, swap, fade back in,
-        // so the key cross-fades rather than snapping to the new section's legend.
+      if (swapping && !reduced && opts.morph) {
+        // Same place, different measurement: cross-fade the whole legend (ramp + labels) so it
+        // transforms in step with the map, rather than blinking.
+        morphLegend(section.legendHTML);
+      } else if (swapping && !reduced) {
+        // Different place (e.g. Heat -> Maritime): dip the content out, swap, fade back in.
         legendEl.classList.add('is-swapping');
         // 160ms = the one-off legend "swap dip" (matches the .legend transition in style.css).
         // A local implementation detail, intentionally not a shared motion token.
@@ -108,11 +174,13 @@ export function initScrolly(map, sections, opts = {}) {
           legendClearTimer = null;
         }, 160);
       } else {
+        clearMorph(); // reduced motion / first show: land the content directly
         legendEl.innerHTML = section.legendHTML;
         legendEl.classList.remove('is-swapping');
       }
       if (legendWrap) legendWrap.classList.add('is-shown'); // panel fades in via CSS
     } else if (legendWrap) {
+      clearMorph(); // hiding: cancel any in-flight morph
       legendWrap.classList.remove('is-shown'); // panel fades out via CSS
       // Clear the content only after the fade so it doesn't blank abruptly.
       const clear = () => {
@@ -157,10 +225,22 @@ export function initScrolly(map, sections, opts = {}) {
 
   function activate(section) {
     if (!section || section.id === activeId) return;
+    const prev = byId.get(activeId); // the section we're leaving — captured BEFORE reassigning
     activeId = section.id;
     desired = section;
     map.closePopup(); // dismiss any inspect / vessel popup from the previous section
     setState({ section: section.id });
+
+    // Legend morph applies exactly when the map does an in-place overlay cross-dissolve: the two
+    // sections share a camera centre and both carry a legend (Vegetation <-> Heat — same place,
+    // different instrument). Derived from the camera, not hardcoded to section ids.
+    const sameCam =
+      prev &&
+      prev.camera &&
+      section.camera &&
+      prev.camera.center[0] === section.camera.center[0] &&
+      prev.camera.center[1] === section.camera.center[1];
+    const morph = !!(prev && prev.legendHTML && section.legendHTML && sameCam);
 
     // Cancel any pending choreography from the previous section up front — this is what makes
     // fast forward- and reverse-scrolling safe (no stale overlay-in, affordance, or card).
@@ -195,7 +275,7 @@ export function initScrolly(map, sections, opts = {}) {
     const revealEvidence = () => {
       overlayTimer = null;
       if (incoming) incoming.setVisible(map, true);
-      if (hasLegend) updateLegend(section);
+      if (hasLegend) updateLegend(section, { morph });
       signalRasterVisible(incoming && incoming.key ? incoming.key : null);
     };
     if (overlayLeadDelay === 0) revealEvidence();

@@ -465,9 +465,42 @@ body.methods-active #map-wash {
 .legend.is-swapping {
   opacity: 0;
 }
+/* Legend cross-fade morph (Vegetation <-> Heat): the outgoing legend is copied into a ghost that
+   fades out while the new #legend fades in, both over --dur-panel so the ramp dissolves in step
+   with the map's raster cross-dissolve. `.legend-ghost` after `.legend` wins the shared-specificity
+   transition; the panel's overflow:hidden clips it to the rounded corners. */
+.legend.is-morphing {
+  transition: opacity var(--dur-panel) var(--ease-ground);
+}
+.legend.is-morph-in {
+  opacity: 0;
+}
+.legend-ghost {
+  position: absolute;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity var(--dur-panel) var(--ease-ground);
+}
+.legend-ghost.is-out {
+  opacity: 0;
+}
+/* Only during a morph: also ease the panel height so it doesn't pop between the NDVI and thermal
+   legend heights (width stays fixed). Restates the panel's base transitions — CSS can't append to
+   `transition` — plus height. */
+.legend-panel.is-morphing {
+  transition:
+    height var(--dur-panel) var(--ease-ground),
+    opacity var(--dur-component) var(--ease-standard),
+    transform var(--dur-component) var(--ease-standard),
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
+}
 @media (prefers-reduced-motion: reduce) {
   .legend-panel,
-  .legend {
+  .legend-panel.is-morphing,
+  .legend,
+  .legend-ghost {
     transition: none;
   }
 }
