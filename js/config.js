@@ -96,7 +96,7 @@ export const SECTIONS = [
     kind: 'section',
     // Vegetation and heat share one camera (whole-island framing) so scrolling between
     // them cross-fades the NDVI and temperature layers in place — no zoom/pan jump.
-    camera: { center: [1.35, 103.82], zoom: 11.5, duration: 2 },
+    camera: { center: [1.35, 103.80], zoom: 12, duration: 2 },
     layerConfig: { id: ndviLayer.id, sourceId: ndviLayer.sourceId, module: ndviLayer, visible: true },
     legendHTML:
       `<h3>${M.ndvi.title}</h3>` +
@@ -118,7 +118,7 @@ export const SECTIONS = [
     id: 'heat',
     kind: 'section',
     // Same camera as vegetation (see note there) — the layers swap without moving the map.
-    camera: { center: [1.35, 103.82], zoom: 11.5, duration: 2 },
+    camera: { center: [1.35, 103.80], zoom: 12, duration: 2 },
     layerConfig: { id: thermalLayer.id, sourceId: thermalLayer.sourceId, module: thermalLayer, visible: true },
     legendHTML:
       `<h3>${M.thermal.title}</h3>` +
@@ -139,7 +139,9 @@ export const SECTIONS = [
   {
     id: 'maritime',
     kind: 'section',
-    camera: { center: [1.205, 103.80], zoom: 11.5, duration: 2 },
+    // Same longitude as heat, so the move to the Strait is a smooth vertical glide south
+    // (a slightly longer duration eases the bigger jump down to the ships).
+    camera: { center: [1.205, 103.80], zoom: 11.5, duration: 2.6 },
     layerConfig: { id: maritimeLayer.id, sourceId: maritimeLayer.sourceId, module: maritimeLayer, visible: true },
     legendHTML:
       `<h3>${M.maritime.title}</h3>` +
