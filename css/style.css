@@ -87,6 +87,15 @@
   --card-w: 404px;
   --radius: var(--r-4);
 
+  /* motion vocabulary — MIRRORS js/motion.js (MOTION.*). Keep the two in sync.
+     Theme-independent, so defined once here (not in the light/dark token blocks). */
+  --dur-micro: 120ms; /* Must match MOTION.durMicro in js/motion.js */
+  --dur-component: 260ms; /* Must match MOTION.durComponent in js/motion.js */
+  --dur-panel: 520ms; /* Must match MOTION.durPanel in js/motion.js */
+  --delay-narrative: 260ms; /* Must match MOTION.delayNarrative in js/motion.js */
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1); /* Must match MOTION.easeStandard */
+  --ease-ground: cubic-bezier(0.4, 0, 0.2, 1); /* Must match MOTION.easeGround */
+
   font-synthesis: none;
   color-scheme: light dark; /* native scrollbars / form controls / Leaflet zoom match theme */
 }
@@ -236,7 +245,7 @@ body {
   background: var(--paper);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.5s ease;
+  transition: opacity var(--dur-panel) var(--ease-ground);
 }
 body.methods-active #map-wash {
   opacity: 0.88;
@@ -378,8 +387,8 @@ body.methods-active #map-wash {
   transform: translateY(6px);
   pointer-events: none;
   transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
+    opacity var(--dur-component) var(--ease-standard),
+    transform var(--dur-component) var(--ease-standard);
 }
 .inspect-hint.is-shown {
   opacity: 1;
@@ -436,8 +445,8 @@ body.methods-active #map-wash {
   transform: translateY(-6px);
   pointer-events: none;
   transition:
-    opacity 0.35s ease,
-    transform 0.35s ease,
+    opacity var(--dur-component) var(--ease-standard),
+    transform var(--dur-component) var(--ease-standard),
     background-color 0.3s ease,
     color 0.3s ease,
     border-color 0.3s ease;
@@ -447,7 +456,9 @@ body.methods-active #map-wash {
   transform: none;
   pointer-events: auto;
 }
-/* content cross-fade when swapping between two sections' legends */
+/* content cross-fade when swapping between two sections' legends. 160ms is a deliberate
+   one-off "swap dip" (a quick content blink under the panel fade), not part of the shared
+   motion vocabulary — kept local on purpose. Paired with the 160ms swap timer in scrolly.js. */
 .legend {
   transition: opacity 0.16s ease;
 }
@@ -616,8 +627,8 @@ body.methods-active #map-wash {
   transform: translateY(14px);
   opacity: 0;
   transition:
-    opacity 0.5s ease,
-    transform 0.5s ease,
+    opacity var(--dur-panel) var(--ease-standard),
+    transform var(--dur-panel) var(--ease-standard),
     background-color 0.3s ease,
     border-color 0.3s ease,
     color 0.3s ease;
@@ -1093,7 +1104,7 @@ body.methods-active #map-wash {
     box-shadow: 0 -10px 34px rgba(0, 0, 0, 0.28);
     padding: 16px 18px calc(16px + env(safe-area-inset-bottom));
     transform: translateY(110%);
-    transition: transform 0.28s ease;
+    transition: transform var(--dur-component) var(--ease-standard);
   }
   .inspect-sheet.is-shown {
     transform: translateY(0);

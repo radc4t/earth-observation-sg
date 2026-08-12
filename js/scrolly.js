@@ -3,11 +3,12 @@
 // calls from fast scrolling are collapsed to the latest target via an isFlying guard.
 
 import { setState } from './state.js';
+import { MOTION } from './motion.js';
 
 // Evidence, then interpretation: the map transforms first (camera + overlay), then
-// after a brief beat the story card rises. Tunable — re-time it once the real animation is on
-// screen. Set to 0 under reduced motion (the card appears with everything else).
-const CARD_REVEAL_DELAY_MS = 280;
+// after a brief beat the story card rises. From the shared motion vocabulary so the beat
+// matches the other component timings. Set to 0 under reduced motion (card appears with all else).
+const CARD_REVEAL_DELAY_MS = MOTION.delayNarrative;
 
 export function initScrolly(map, sections, opts = {}) {
   const legendEl = opts.legendEl || document.getElementById('legend');
@@ -54,6 +55,8 @@ export function initScrolly(map, sections, opts = {}) {
         // Already visible with different content: dip the content out, swap, fade back in,
         // so the key cross-fades rather than snapping to the new section's legend.
         legendEl.classList.add('is-swapping');
+        // 160ms = the one-off legend "swap dip" (matches the .legend transition in style.css).
+        // A local implementation detail, intentionally not a shared motion token.
         legendClearTimer = setTimeout(() => {
           legendEl.innerHTML = section.legendHTML;
           legendEl.classList.remove('is-swapping');
@@ -71,6 +74,8 @@ export function initScrolly(map, sections, opts = {}) {
         if (!legendWrap.classList.contains('is-shown')) legendEl.innerHTML = '';
         legendClearTimer = null;
       };
+      // 350ms = local "clear after the panel has faded out" delay (must stay >= the panel
+      // fade so content doesn't blank early); a one-off, not a shared motion token.
       if (reduced) clear();
       else legendClearTimer = setTimeout(clear, 350);
     }
@@ -100,7 +105,7 @@ export function initScrolly(map, sections, opts = {}) {
     } else {
       map.flyTo(s.camera.center, s.camera.zoom, {
         duration: s.camera.duration || 2,
-        easeLinearity: 0.25,
+        easeLinearity: MOTION.easeLinearity,
       });
     }
   }

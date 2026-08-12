@@ -12,6 +12,7 @@
 // See docs/swap-instructions.md.
 
 import { setState, subscribe } from './state.js';
+import { MOTION, cssTransition } from './motion.js';
 
 // OneMap (Singapore Land Authority) is prepared but NOT shipped live. Its tiles are token-free
 // per the OneMap docs, but its Terms of Use MANDATE embedding the official OneMap logo +
@@ -144,7 +145,10 @@ function ensurePane(map, key) {
   if (!pane) {
     pane = map.createPane(name);
     pane.style.zIndex = '200'; // above the (unused) default tilePane, below overlayPane (400)
-    pane.style.transition = reducedMotion() ? 'none' : 'opacity 0.6s ease';
+    // Ground cross-fade uses the shared "panel" duration + ground easing (see js/motion.js).
+    pane.style.transition = reducedMotion()
+      ? 'none'
+      : cssTransition('opacity', MOTION.durPanel, MOTION.easeGround);
   }
   return pane;
 }
@@ -240,7 +244,8 @@ export function setBasemap(map, key) {
       setPaneOpacity(map, key, 1);
       setPaneOpacity(map, outgoing, 0);
     });
-    pendingCleanup = { key: outgoing, timer: setTimeout(finishCleanup, 650) };
+    // Remove the outgoing ground once its fade-out has finished (fade duration + a small buffer).
+    pendingCleanup = { key: outgoing, timer: setTimeout(finishCleanup, MOTION.durPanel + 60) };
   }
   return activeKey;
 }
