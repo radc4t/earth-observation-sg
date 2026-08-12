@@ -12,14 +12,16 @@ locations as you scroll.
 
 ## Real vs. illustrative — read this first
 
-- **Real:** the satellite **basemap** is genuine, free, no-API-key public imagery —
-  [EOX Sentinel-2 cloudless](https://s2maps.eu) (Copernicus Sentinel-2) and
+- **Real basemap:** the satellite **basemap** is genuine, free, no-API-key public
+  imagery — [EOX Sentinel-2 cloudless](https://s2maps.eu) (Copernicus Sentinel-2) and
   [Esri World Imagery](https://www.esri.com). Toggle between them, pan and zoom freely.
-- **Illustrative:** the **NDVI, thermal and vessel overlays are designed placeholders.**
-  They are shaped to read correctly (green over the Central Catchment, heat over the
-  industrial west, ships along the Strait) but are **not** real satellite products yet.
-  Each is wired to accept real data via a one-line swap — see
-  [`docs/swap-instructions.md`](docs/swap-instructions.md).
+- **Real NDVI:** the **vegetation layer is genuine Sentinel-2 NDVI** (10 m, 28 Jul 2024,
+  clouds & water masked), computed from the free AWS Open Data Sentinel-2 L2A mirror by
+  [`scripts/generate-placeholders/build_real_ndvi.py`](scripts/generate-placeholders/build_real_ndvi.py).
+- **Illustrative:** the **thermal and vessel overlays are still designed placeholders.**
+  They are shaped to read correctly (heat over the industrial west, ships along the
+  Strait) but are **not** real satellite products yet. Each is wired to accept real data
+  via a one-line swap — see [`docs/swap-instructions.md`](docs/swap-instructions.md).
 
 This honest separation is deliberate: it keeps the prototype truthful while the visual
 storytelling is proven, and shows exactly where real rasters/AIS drop in.
@@ -41,6 +43,14 @@ No build step — vanilla ES modules + [Leaflet](https://leafletjs.com) from a C
 > more truthfully than a tilted 3D one. The swap hooks and story structure are
 > engine-agnostic.
 
+Regenerating the **placeholder** overlays needs `numpy` + `Pillow`. Rebuilding the
+**real Sentinel-2 NDVI** needs `rasterio` as well:
+
+```bash
+pip install rasterio numpy pillow
+python3 scripts/generate-placeholders/build_real_ndvi.py   # real NDVI from Sentinel-2 L2A
+```
+
 ## Structure
 
 ```
@@ -54,8 +64,9 @@ js/
     ndvi.js                vegetation image overlay + swapWithRealRaster()
     thermal.js             thermal image overlay + swapWithRealRaster()
     maritime.js            animated vessels + rAF loop + replaceWithRealAIS()
-assets/overlays/           generated placeholder PNGs (ndvi, thermal)
-scripts/generate-placeholders/generate_overlays.py   reproducible overlay generator
+assets/overlays/           ndvi_real.png (real Sentinel-2 NDVI), ndvi.png/thermal.png (placeholders)
+scripts/generate-placeholders/generate_overlays.py   reproducible placeholder generator
+scripts/generate-placeholders/build_real_ndvi.py     real Sentinel-2 NDVI pipeline (STAC + rasterio)
 docs/swap-instructions.md  per-layer real-data swap guide
 ```
 

@@ -9,17 +9,25 @@ function. This guide covers the swap for each layer.
 
 ---
 
-## 1. NDVI (vegetation) — `js/layers/ndvi.js`
+## 1. NDVI (vegetation) — `js/layers/ndvi.js`  ✅ already real
 
-**Placeholder:** `assets/overlays/ndvi.png` (viridis ramp), positioned by a Leaflet
-bounds rectangle that matches the `BBOX` in
-`scripts/generate-placeholders/generate_overlays.py`.
+**Live layer:** `assets/overlays/ndvi_real.png` — **genuine Sentinel-2 NDVI** (10 m,
+28 Jul 2024, clouds & water masked), built by
+[`scripts/generate-placeholders/build_real_ndvi.py`](../scripts/generate-placeholders/build_real_ndvi.py).
+That script finds the least-cloudy Sentinel-2 L2A scene over Singapore via the free,
+keyless AWS Open Data mirror (Earth Search STAC), reads the red/NIR/SCL bands with
+`rasterio`, computes NDVI, masks cloud/shadow/water via the scene-classification band,
+and colourises with the shared viridis ramp. Rebuild it any time:
 
-**Get real data:** compute NDVI = (NIR − Red) / (NIR + Red) from a Sentinel-2 scene
-(bands B8 and B4) over Singapore — e.g. in the Copernicus Browser, Sentinel Hub, or
-Google Earth Engine — and export a colour-mapped PNG/GeoTIFF clipped to the same bounds.
+```bash
+python3 scripts/generate-placeholders/build_real_ndvi.py   # needs rasterio + numpy + Pillow
+```
 
-**Swap (one call):**
+**Placeholder (kept for reference / offline):** `assets/overlays/ndvi.png`, from
+`generate_overlays.py`. Positioned by the same Leaflet bounds rectangle.
+
+**Swap to a different raster** (e.g. a Copernicus Browser / Sentinel Hub export — NDVI =
+(NIR − Red)/(NIR + Red), bands B8/B4 — clipped to the same bounds):
 ```js
 import { ndviLayer } from './js/layers/ndvi.js';
 // Leaflet bounds: [[south, west], [north, east]]

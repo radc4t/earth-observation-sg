@@ -64,7 +64,7 @@ export const SECTIONS = [
     legendHTML:
       '<h3>Vegetation index (NDVI)</h3>' +
       rampSvg(VIRIDIS_STOPS, 'Bare / built', 'Dense canopy', 'ndvi') +
-      '<p class="legend-note">Illustrative placeholder · real source: Sentinel-2 (red/near-infrared)</p>',
+      '<p class="legend-note">Real: Sentinel-2 NDVI · 28 Jul 2024 · clouds &amp; water masked</p>',
     copy: {
       title: 'How green is Singapore, really?',
       body:

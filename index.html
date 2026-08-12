@@ -79,8 +79,9 @@
           <summary>About the data</summary>
           <div class="about-body">
             <p><strong>Real imagery:</strong> the satellite basemap is genuine, free, public data — <a href="https://s2maps.eu" target="_blank" rel="noopener">EOX Sentinel-2 cloudless</a> (Copernicus Sentinel-2) and <a href="https://www.esri.com" target="_blank" rel="noopener">Esri World Imagery</a>.</p>
-            <p><strong>Illustrative overlays:</strong> the NDVI, thermal and vessel layers on this prototype are <em>designed placeholders</em> that show how each product reads. Each is wired to accept a real raster / AIS feed via a documented one-line swap — see <a href="docs/swap-instructions.md">docs/swap-instructions.md</a>. Real sources: Sentinel-2 (NDVI), Landsat 8/9 thermal band (surface temperature), AIS transponder data (vessels).</p>
-            <p class="credits">Basemaps © EOX IT Services GmbH · © Esri, Maxar, Earthstar Geographics · Contains modified Copernicus Sentinel data. Map rendering by MapLibre GL.</p>
+            <p><strong>Real NDVI:</strong> the vegetation layer is genuine Sentinel-2 NDVI (10&nbsp;m, 28&nbsp;Jul&nbsp;2024, clouds &amp; water masked), computed from the free AWS Open Data Sentinel-2 L2A mirror — see <a href="docs/swap-instructions.md">docs/swap-instructions.md</a>.</p>
+            <p><strong>Illustrative overlays:</strong> the thermal and vessel layers are still <em>designed placeholders</em> that show how each product reads, each wired to accept real data via a one-line swap. Real sources: Landsat 8/9 thermal band (surface temperature), AIS transponder data (vessels).</p>
+            <p class="credits">Basemaps © EOX IT Services GmbH · © Esri, Maxar, Earthstar Geographics · Contains modified Copernicus Sentinel data. Map rendering by Leaflet.</p>
           </div>
         </details>
       </div>
