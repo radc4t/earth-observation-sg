@@ -157,13 +157,31 @@ export function initInspect(map, inspectables) {
     inspectAt(map.getCenter());
   });
 
-  // State-driven affordance + stale-readout cleanup. When no inspectable layer is active
-  // (hero/maritime/outro, and across section changes), hide the hint/cursor, close any open
-  // readout, and clear the live region so a stale reading is never left hanging.
+  // The VISIBLE affordance (crosshair cursor + "read a value" hint) is gated on a local
+  // "raster visible" signal raised by scrolly.js when the destination overlay actually develops
+  // in — NOT on state.overlays. So during a camera glide the reader is never told to click data
+  // that isn't on screen yet. Sampling still keys off state.overlays (activeKeys), so logical
+  // correctness (which layer is read) and visible affordance (is there anything to read) are
+  // decoupled — exactly the state-vs-affordance split this transition needs.
+  let rasterVisibleKey = null;
+  function updateAffordance() {
+    const on = !!rasterVisibleKey && INSPECTABLE.includes(rasterVisibleKey);
+    mapEl.classList.toggle('is-inspectable', on);
+    if (hintEl) hintEl.classList.toggle('is-shown', on);
+  }
+  // Called by scrolly.js: the key of the raster that has just become visible, or null to hide the
+  // affordance (immediately, at the start of every transition).
+  function setRasterVisible(key) {
+    rasterVisibleKey = key || null;
+    updateAffordance();
+  }
+
+  // State-driven stale-readout cleanup. When no inspectable layer is logically active
+  // (hero/maritime/outro, and across every section change), close any open readout and clear the
+  // live region so a stale reading is never left hanging. Affordance visibility is handled by
+  // setRasterVisible (above), not here.
   function reflect(s) {
     const inspectable = INSPECTABLE.some((k) => s.overlays[k]);
-    mapEl.classList.toggle('is-inspectable', inspectable);
-    if (hintEl) hintEl.classList.toggle('is-shown', inspectable);
     if (!inspectable) {
       closeReadout();
       if (liveEl) liveEl.textContent = '';
@@ -171,4 +189,7 @@ export function initInspect(map, inspectables) {
   }
   subscribe(reflect);
   reflect(state);
+  updateAffordance();
+
+  return { setRasterVisible };
 }
