@@ -12,6 +12,7 @@ import { initMobile } from './mobile.js';
 import { RAMPS, rampGradientCss } from './ramps.js';
 import { ndviLayer } from './layers/ndvi.js';
 import { thermalLayer } from './layers/thermal.js';
+import { icon } from './icons.js';
 
 // Populate the Methods chapter's per-layer provenance rows from the single metadata source.
 document.getElementById('methods-body').innerHTML = methodsHTML();
@@ -51,18 +52,39 @@ window.__map = map;
 window.__story = story;
 if (location.hash) story.jumpTo(location.hash.slice(1));
 
-// Legend collapse (mobile-friendly)
+// Icons for the static-HTML controls (decorative Lucide glyphs; the control's text / aria-label
+// carries the accessible name). Injected once at init — a failed lookup degrades to text.
+function initIcons() {
+  const closeBtn = document.querySelector('.inspect-sheet-close');
+  if (closeBtn) closeBtn.innerHTML = icon('x'); // aria-label="Close reading" stays on the button
+
+  // Legend collapse + the Methods <details> disclosure share one chevron; its direction is driven
+  // by CSS from aria-expanded / [open], so nothing here (or later) rotates the SVG.
+  const lc = document.getElementById('legend-collapse');
+  if (lc) lc.insertAdjacentHTML('beforeend', icon('chevron-down'));
+  const summary = document.querySelector('.about summary');
+  if (summary) summary.insertAdjacentHTML('afterbegin', icon('chevron-down'));
+
+  // External links get an "opens in new tab" arrow (decorative) + a visually-hidden phrase so the
+  // accessible name reads cleanly, e.g. "EOX IT Services GmbH, opens in new tab".
+  document.querySelectorAll('.about-body a[target="_blank"]').forEach((a) => {
+    if (a.dataset.iconified) return; // append once
+    a.dataset.iconified = '1';
+    a.insertAdjacentHTML(
+      'beforeend',
+      icon('arrow-up-right') + '<span class="sr-only"> (opens in new tab)</span>'
+    );
+  });
+}
+initIcons();
+
+// Legend collapse (mobile-friendly). Toggles [hidden] on the legend body and aria-expanded on the
+// button; the chevron direction follows aria-expanded via CSS (no text/glyph juggling).
 const collapseBtn = document.getElementById('legend-collapse');
 const legendBody = document.getElementById('legend');
 collapseBtn.addEventListener('click', () => {
-  const open = legendBody.hasAttribute('hidden');
-  if (open) {
-    legendBody.removeAttribute('hidden');
-    collapseBtn.setAttribute('aria-expanded', 'true');
-    collapseBtn.textContent = 'Legend ▾';
-  } else {
-    legendBody.setAttribute('hidden', '');
-    collapseBtn.setAttribute('aria-expanded', 'false');
-    collapseBtn.textContent = 'Legend ▸';
-  }
+  const collapsed = legendBody.hasAttribute('hidden');
+  if (collapsed) legendBody.removeAttribute('hidden');
+  else legendBody.setAttribute('hidden', '');
+  collapseBtn.setAttribute('aria-expanded', String(collapsed));
 });

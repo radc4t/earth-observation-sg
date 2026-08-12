@@ -6,6 +6,8 @@
 // A tiny inline <head> script in index.html applies the stored choice before first paint to
 // avoid a flash of the system theme (FOUC); this module owns everything after that.
 
+import { icon } from './icons.js';
+
 const KEY = 'eo-theme'; // 'light' | 'dark' | absent (follow the system preference)
 
 export function storedTheme() {
@@ -52,7 +54,8 @@ export function registerThemeToggle(button) {
     const isDark = currentTheme() === 'dark';
     button.setAttribute('aria-pressed', String(isDark));
     button.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
-    button.textContent = isDark ? '☀' : '☾'; // shows the current theme; label states the action
+    // Visual cue only — the aria-label above carries the action. Same mapping as the old ☀/☾ glyph.
+    button.innerHTML = icon(isDark ? 'sun' : 'moon');
   };
   sync();
   button.addEventListener('click', () => {

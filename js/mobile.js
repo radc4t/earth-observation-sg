@@ -7,6 +7,7 @@
 // the reset is a plain state subscriber.
 
 import { subscribe } from './state.js';
+import { icon } from './icons.js';
 
 const isMobile = () => window.matchMedia('(max-width: 760px)').matches;
 
@@ -31,7 +32,7 @@ export function initMobile(map) {
     handle.className = 'card-handle';
     handle.innerHTML =
       '<span class="card-handle-grip" aria-hidden="true"></span>' +
-      '<span class="card-handle-label">Explore map</span>';
+      `<span class="card-handle-move">${icon('move')}<span class="card-handle-label">Explore map</span></span>`;
     handle.addEventListener('click', () =>
       setExplore(!document.body.classList.contains('map-explore'))
     );
@@ -47,8 +48,7 @@ export function initMobile(map) {
     const collapseBtn = document.getElementById('legend-collapse');
     if (legendBody && collapseBtn && !legendBody.hasAttribute('hidden')) {
       legendBody.setAttribute('hidden', '');
-      collapseBtn.setAttribute('aria-expanded', 'false');
-      collapseBtn.textContent = 'Legend ▸';
+      collapseBtn.setAttribute('aria-expanded', 'false'); // chevron rotation is CSS-driven from this
     }
   }
 

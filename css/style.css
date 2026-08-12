@@ -357,6 +357,65 @@ body.methods-active #map-wash {
   }
 }
 
+/* ---- icons (inline Lucide; decorative, currentColor so they're theme- & forced-colors-safe) ---- */
+.icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  flex: none;
+}
+.theme-toggle .icon {
+  width: 18px;
+  height: 18px;
+}
+.inspect-sheet-close .icon {
+  width: 18px;
+  height: 18px;
+}
+/* legend collapse: label left, chevron right; chevron direction follows aria-expanded via CSS */
+.legend-collapse {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.legend-collapse .icon,
+.about summary .icon {
+  width: 14px;
+  height: 14px;
+  transition: transform var(--dur-micro) var(--ease-standard);
+}
+#legend-collapse[aria-expanded='false'] .icon {
+  transform: rotate(-90deg);
+}
+/* Methods disclosure: native <details>/<summary> kept; only the marker presentation changes */
+.about summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  list-style: none;
+}
+.about summary::-webkit-details-marker {
+  display: none;
+}
+details.about[open] > summary .icon {
+  transform: rotate(180deg);
+}
+/* external-link arrow: small, sits on the text baseline */
+.about-body a .icon {
+  width: 0.78em;
+  height: 0.78em;
+  vertical-align: baseline;
+  margin-left: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .legend-collapse .icon,
+  .about summary .icon {
+    transition: none;
+  }
+}
+
 /* ---- inspect affordance (the "read a value" hint) ---- */
 /* Quiet by design: it should say "this map is readable", not "this is a GIS instrument".
    Bottom-centre so it clears the bottom-left theme toggle and bottom-right zoom control;
@@ -1075,6 +1134,16 @@ body.methods-active #map-wash {
     height: 4px;
     border-radius: 999px;
     background: var(--border-2);
+  }
+  .card-handle-move {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+  }
+  .card-handle-move .icon {
+    width: 13px;
+    height: 13px;
   }
   .card-handle-label {
     font: 500 10.5px/1 var(--mono);

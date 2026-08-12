@@ -51,7 +51,7 @@
     <!-- Mobile inspector reading (bottom sheet). Desktop uses the anchored Leaflet popup;
          inspect.js fills whichever is appropriate. Announcements stay on #inspect-live. -->
     <div id="inspect-sheet" class="inspect-sheet" hidden>
-      <button class="inspect-sheet-close" type="button" aria-label="Close reading">×</button>
+      <button class="inspect-sheet-close" type="button" aria-label="Close reading"></button>
       <div class="inspect-sheet-body inspect-readout"></div>
     </div>
 
@@ -63,10 +63,8 @@
       aria-label="Satellite basemap"
     ></div>
 
-    <!-- Light / dark theme toggle -->
-    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch theme">
-      ☾
-    </button>
+    <!-- Light / dark theme toggle (sun/moon icon injected by theme.js) -->
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch theme"></button>
 
     <!-- Legend (updates per section; visibility handled by the .is-shown class + a fade) -->
     <aside id="legend-panel" class="legend-panel" aria-live="polite">
@@ -77,7 +75,7 @@
         aria-expanded="true"
         aria-controls="legend"
       >
-        Legend ▾
+        <span class="lc-label">Legend</span>
       </button>
       <div id="legend" class="legend"></div>
     </aside>
