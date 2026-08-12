@@ -94,7 +94,9 @@ export const SECTIONS = [
   {
     id: 'vegetation',
     kind: 'section',
-    camera: { center: [1.353, 103.79], zoom: 12.5, duration: 2 },
+    // Vegetation and heat share one camera (whole-island framing) so scrolling between
+    // them cross-fades the NDVI and temperature layers in place — no zoom/pan jump.
+    camera: { center: [1.35, 103.82], zoom: 11.5, duration: 2 },
     layerConfig: { id: ndviLayer.id, sourceId: ndviLayer.sourceId, module: ndviLayer, visible: true },
     legendHTML:
       `<h3>${M.ndvi.title}</h3>` +
@@ -115,7 +117,8 @@ export const SECTIONS = [
   {
     id: 'heat',
     kind: 'section',
-    camera: { center: [1.330, 103.76], zoom: 11.5, duration: 2 },
+    // Same camera as vegetation (see note there) — the layers swap without moving the map.
+    camera: { center: [1.35, 103.82], zoom: 11.5, duration: 2 },
     layerConfig: { id: thermalLayer.id, sourceId: thermalLayer.sourceId, module: thermalLayer, visible: true },
     legendHTML:
       `<h3>${M.thermal.title}</h3>` +

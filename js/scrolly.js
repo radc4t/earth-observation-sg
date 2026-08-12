@@ -78,6 +78,7 @@ export function initScrolly(map, sections, opts = {}) {
     if (!section || section.id === activeId) return;
     activeId = section.id;
     desired = section;
+    map.closePopup(); // dismiss any inspect / vessel popup from the previous section
     setState({ section: section.id });
     applyLayers(section);
     updateLegend(section);
