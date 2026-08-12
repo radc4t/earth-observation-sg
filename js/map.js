@@ -11,6 +11,8 @@
 // The data overlays (NDVI / thermal / maritime) are illustrative placeholders and live
 // in js/layers/*. See docs/swap-instructions.md.
 
+import { setState } from './state.js';
+
 export const BASEMAPS = {
   sentinel2: {
     key: 'sentinel2',
@@ -123,6 +125,7 @@ export function registerBasemapToggle(map, container) {
     if (activeKey === b.key) btn.classList.add('is-active');
     btn.addEventListener('click', () => {
       setBasemap(map, b.key);
+      setState({ basemap: b.key });
       buttons.forEach((el, k) => {
         el.setAttribute('aria-pressed', String(k === b.key));
         el.classList.toggle('is-active', k === b.key);

@@ -16,10 +16,35 @@ const BOUNDS = [
 
 const ACTIVE_OPACITY = 0.82;
 
+import { sampleImageNorm, buildLut } from '../sample.js';
+import { RAMPS } from '../ramps.js';
+import { LAYER_META } from '../metadata.js';
+
+const LUT = buildLut(RAMPS.viridis);
+
+function ndviClass(v) {
+  if (v >= 0.7) return 'dense vegetation';
+  if (v >= 0.5) return 'moderate vegetation';
+  if (v >= 0.3) return 'sparse / mixed';
+  return 'bare / built';
+}
+
 export const ndviLayer = {
   id: 'ndvi-overlay',
+  key: 'ndvi',
   sourceId: 'ndvi-source',
   _layer: null,
+
+  // Read the NDVI value at a lat/lng from the displayed overlay. Returns
+  // { value, unit, cls } | { masked:true } | null. Used by the click-to-inspect tool.
+  inspect(latlng) {
+    if (!this._layer) return null;
+    const r = sampleImageNorm(this._layer.getElement(), BOUNDS, latlng, LUT);
+    if (!r || r.masked) return { masked: true };
+    const m = LAYER_META.ndvi;
+    const v = m.displayMin + r.norm * (m.displayMax - m.displayMin);
+    return { value: v.toFixed(2), unit: '', cls: ndviClass(v) };
+  },
 
   add(map) {
     if (this._layer) return;

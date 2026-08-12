@@ -68,23 +68,39 @@ js/
   config.js                SECTIONS — the story: camera, overlay, legend, copy per step
   map.js                   Leaflet init, basemap layers + toggle, overlay registration, errors
   scrolly.js               IntersectionObserver → flyTo (isFlying-guarded) + overlay + legend
+  metadata.js              LAYER_META — single source for provenance; builds the About panel
+  ramps.js                 viridis/inferno stops — single source (JS + Python both read it)
+  state.js                 tiny central store (section, basemap, overlays, reduced-motion)
+  sample.js                canvas pixel sampler + LUT reverse-lookup (for inspect)
+  inspect.js               click the map → popup with the NDVI value / °C at that point
   layers/
-    ndvi.js                vegetation image overlay + swapWithRealRaster()
-    thermal.js             thermal image overlay + swapWithRealRaster()
+    ndvi.js                vegetation image overlay + inspect() + swapWithRealRaster()
+    thermal.js             thermal image overlay + inspect() + swapWithRealRaster()
     maritime.js            animated vessels + rAF loop + replaceWithRealAIS()
 assets/overlays/           ndvi_real.png + thermal_real.png (real); ndvi.png/thermal.png (placeholders)
+scripts/generate-placeholders/ramps.py               loads the ramps from js/ramps.js (single source)
 scripts/generate-placeholders/generate_overlays.py   reproducible placeholder generator
 scripts/generate-placeholders/build_real_ndvi.py     real Sentinel-2 NDVI pipeline (AWS STAC + rasterio)
 scripts/generate-placeholders/build_real_thermal.py  real Landsat surface temp (Planetary Computer + rasterio)
 docs/swap-instructions.md  per-layer real-data swap guide
 ```
 
-**Colour-ramp single source of truth:** the viridis (NDVI) and inferno (thermal) hex
-stops live in `generate_overlays.py` and are mirrored in the `config.js` legend
-gradients. Change one, change the other — a paired-edit note sits in both files.
+**Colour-ramp single source of truth:** the viridis (NDVI) and inferno (thermal) stops
+live in one file, `js/ramps.js`. `config.js` imports it for the legend gradients, the
+inspect tool reverse-looks-up against it, and the Python builders parse it via `ramps.py`
+— so the overlays, legends and click-readouts can't drift. Nothing to keep in sync by hand.
 
 ## Design / robustness notes
 
+- **Click to inspect:** click the map to read the real value under the cursor — NDVI value
+  + class for vegetation, °C for temperature (both if both are visible), "no reading here"
+  where masked, "No data at this location" where no overlay is active. It samples the
+  overlay PNG on a hidden canvas and reverse-looks-up the ramp, then shows source + date
+  from metadata. (`js/inspect.js`, `js/sample.js`.)
+- **Central state (`js/state.js`):** a single small store holds the active section,
+  basemap, visible overlays and reduced-motion; `scrolly.js` and the basemap toggle write
+  to it and the inspect tool reads from it — a seam future features (time slider, compare)
+  can extend.
 - **Scroll storytelling:** each step card drives a `map.flyTo`; an `isFlying` guard
   collapses rapid-scroll retargets to the latest destination.
 - **Accessibility:** colourblind-safe ramps (viridis / inferno, no red-green), keyboard

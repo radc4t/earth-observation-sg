@@ -1,17 +1,17 @@
 // config.js — the story. Each section drives the camera, the active overlay,
 // the legend and the copy for one scroll step.
-//
-// COLOUR-RAMP SINGLE SOURCE OF TRUTH (paired edit): the VIRIDIS/INFERNO hex stops
-// below are duplicated from scripts/generate-placeholders/generate_overlays.py. If you
-// change a ramp in the Python generator, change it here too, or the overlay PNG and
-// its legend gradient will drift.
 
 import { ndviLayer } from './layers/ndvi.js';
 import { thermalLayer } from './layers/thermal.js';
 import { maritimeLayer, VESSEL_TYPES } from './layers/maritime.js';
 import { LAYER_META } from './metadata.js';
+import { RAMPS } from './ramps.js';
 
 const M = LAYER_META;
+// Colour ramps come from the single source of truth (js/ramps.js) — the same stops the
+// Python builders use to colourise the PNGs, so legends and overlays cannot drift.
+const VIRIDIS_STOPS = RAMPS.viridis;
+const INFERNO_STOPS = RAMPS.inferno;
 
 // Legend note for a REAL layer, and a prominent badge + note for an illustrative one —
 // all derived from js/metadata.js so wording can't drift from the About panel.
@@ -26,13 +26,11 @@ function illustrationNote(m) {
   return `<p class="legend-note">${m.illustrationNote} · real source: ${m.realSource}</p>`;
 }
 
-const VIRIDIS_STOPS = ['#440154', '#3b528b', '#21918c', '#5ec962', '#fde725'];
-const INFERNO_STOPS = ['#000004', '#420a68', '#932667', '#dd513a', '#fca50a', '#fcffa4'];
 
 function rampSvg(stops, leftLabel, rightLabel, id) {
   const gid = `grad-${id}`;
   const offsets = stops
-    .map((c, i) => `<stop offset="${(i / (stops.length - 1)) * 100}%" stop-color="${c}"/>`)
+    .map(([pos, hex]) => `<stop offset="${pos * 100}%" stop-color="${hex}"/>`)
     .join('');
   return `
     <div class="legend-ramp">
@@ -49,7 +47,7 @@ function rampSvg(stops, leftLabel, rightLabel, id) {
 function valueRamp(stops, ticks, unit, id) {
   const gid = `grad-${id}`;
   const offsets = stops
-    .map((c, i) => `<stop offset="${(i / (stops.length - 1)) * 100}%" stop-color="${c}"/>`)
+    .map(([pos, hex]) => `<stop offset="${pos * 100}%" stop-color="${hex}"/>`)
     .join('');
   return `
     <div class="legend-ramp">

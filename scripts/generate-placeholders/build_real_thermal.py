@@ -43,11 +43,9 @@ OUT_H = int(round(OUT_W * (BBOX["north"] - BBOX["south"]) / (BBOX["east"] - BBOX
 DISPLAY_MPP = BBOX_WIDTH_M / OUT_W
 OUT_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", "assets", "overlays"))
 
-# inferno stops — identical to generate_overlays.py / js/config.js (paired edit).
-INFERNO_STOPS = [
-    (0.00, "#000004"), (0.25, "#420a68"), (0.50, "#932667"),
-    (0.75, "#dd513a"), (0.90, "#fca50a"), (1.00, "#fcffa4"),
-]
+# inferno stops from the single source of truth (js/ramps.js) via ramps.py.
+from ramps import load_ramps
+INFERNO_STOPS = load_ramps()["inferno"]
 STAC = "https://planetarycomputer.microsoft.com/api/stac/v1/search"
 SIGN = "https://planetarycomputer.microsoft.com/api/sas/v1/sign?href="
 # QA_PIXEL bits to hide: fill(0), dilated cloud(1), cirrus(2), cloud(3), cloud shadow(4)

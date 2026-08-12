@@ -101,6 +101,7 @@ function buildVessels(map, count) {
       weight: 1,
       fillColor: VESSEL_TYPES[type],
       fillOpacity: 0.95,
+      bubblingMouseEvents: false, // a vessel click opens its own popup, not the inspect tool
     });
     marker.bindPopup(
       `<div class="vessel-pop"><strong>${type}</strong> · ${id}<br>${knots} kn<br>` +
@@ -117,6 +118,7 @@ function laneLatLngs(spine) {
 
 export const maritimeLayer = {
   id: 'vessels',
+  key: 'maritime',
   sourceId: 'vessels-source',
 
   add(map) {
@@ -215,6 +217,7 @@ export const maritimeLayer = {
       const marker = L.circleMarker([p.lat, p.lng], {
         radius: 4, color: '#0b1622', weight: 1,
         fillColor: VESSEL_TYPES[type] || '#38bdf8', fillOpacity: 0.95,
+        bubblingMouseEvents: false,
       });
       marker.bindPopup(`<div class="vessel-pop"><strong>${type}</strong> · ${id}<br>${knots} kn</div>`);
       marker.addTo(vesselGroup);

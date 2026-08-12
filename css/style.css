@@ -215,6 +215,13 @@ html, body {
 .vessel-pop strong { color: var(--accent); }
 .vessel-pop .pop-note { color: var(--ink-dim); font-size: 11px; }
 
+/* click-to-inspect popup */
+.inspect-pop { font-size: 13px; line-height: 1.5; }
+.inspect-pop .inspect-row + .inspect-row { margin-top: 8px; border-top: 1px solid var(--glass-brd); padding-top: 8px; }
+.inspect-pop strong { color: var(--accent); }
+.inspect-pop .pop-sub { color: var(--ink-dim); font-size: 11px; }
+.inspect-pop .pop-none { color: var(--ink-dim); }
+
 /* ---- responsive / mobile ---- */
 @media (max-width: 760px) {
   :root { --card-w: 100%; }

@@ -2,6 +2,8 @@
 // fly the camera, toggle the right overlay, and swap the legend. Overlapping flyTo
 // calls from fast scrolling are collapsed to the latest target via an isFlying guard.
 
+import { setState } from './state.js';
+
 export function initScrolly(map, sections, opts = {}) {
   const legendEl = opts.legendEl || document.getElementById('legend');
   const legendWrap = opts.legendWrap || document.getElementById('legend-panel');
@@ -22,9 +24,13 @@ export function initScrolly(map, sections, opts = {}) {
 
   function applyLayers(section) {
     hideAllOverlays();
+    const overlays = { ndvi: false, thermal: false, maritime: false };
     if (section.layerConfig && section.layerConfig.module) {
-      section.layerConfig.module.setVisible(map, true);
+      const mod = section.layerConfig.module;
+      mod.setVisible(map, true);
+      if (mod.key) overlays[mod.key] = true;
     }
+    setState({ overlays });
   }
 
   function updateLegend(section) {
@@ -72,6 +78,7 @@ export function initScrolly(map, sections, opts = {}) {
     if (!section || section.id === activeId) return;
     activeId = section.id;
     desired = section;
+    setState({ section: section.id });
     applyLayers(section);
     updateLegend(section);
     document.querySelectorAll('.step').forEach((el) => {

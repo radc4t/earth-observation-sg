@@ -16,10 +16,28 @@ const BOUNDS = [
 
 const ACTIVE_OPACITY = 0.8;
 
+import { sampleImageNorm, buildLut } from '../sample.js';
+import { RAMPS } from '../ramps.js';
+import { LAYER_META } from '../metadata.js';
+
+const LUT = buildLut(RAMPS.inferno);
+
 export const thermalLayer = {
   id: 'thermal-overlay',
+  key: 'thermal',
   sourceId: 'thermal-source',
   _layer: null,
+
+  // Read the surface temperature (°C) at a lat/lng from the displayed overlay. Returns
+  // { value, unit } | { masked:true } | null. Used by the click-to-inspect tool.
+  inspect(latlng) {
+    if (!this._layer) return null;
+    const r = sampleImageNorm(this._layer.getElement(), BOUNDS, latlng, LUT);
+    if (!r || r.masked) return { masked: true };
+    const m = LAYER_META.thermal;
+    const c = m.tminC + r.norm * (m.tmaxC - m.tminC);
+    return { value: c.toFixed(1), unit: ' °C' };
+  },
 
   add(map) {
     if (this._layer) return;

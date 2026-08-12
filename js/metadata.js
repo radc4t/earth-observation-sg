@@ -20,6 +20,10 @@ export const LAYER_META = {
     displayResolution: '~16 m/px',
     processing: ['NDVI = (B08 − B04)/(B08 + B04)', 'cloud & water masked (SCL)'],
     rampEnds: ['Bare / built', 'Dense canopy'],
+    // NDVI value range mapped onto the ramp — must match NDVI_LO / NDVI_HI in
+    // build_real_ndvi.py so click-to-inspect reports the right value.
+    displayMin: 0.05,
+    displayMax: 0.85,
   },
   thermal: {
     real: true,

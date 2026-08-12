@@ -48,12 +48,11 @@ OUT_H = int(round(OUT_W * (BBOX["north"] - BBOX["south"]) / (BBOX["east"] - BBOX
 DISPLAY_MPP = BBOX_WIDTH_M / OUT_W
 OUT_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", "assets", "overlays"))
 
-# viridis stops — identical to generate_overlays.py and js/config.js (paired edit).
-VIRIDIS_STOPS = [
-    (0.00, "#440154"), (0.25, "#3b528b"), (0.50, "#21918c"),
-    (0.75, "#5ec962"), (1.00, "#fde725"),
-]
+# viridis stops from the single source of truth (js/ramps.js) via ramps.py.
+from ramps import load_ramps
+VIRIDIS_STOPS = load_ramps()["viridis"]
 # NDVI display range: below NDVI_LO reads as bare/built, above NDVI_HI as dense canopy.
+# Keep in sync with js/metadata.js ndvi.displayMin / displayMax (used by click-to-inspect).
 NDVI_LO, NDVI_HI = 0.05, 0.85
 # SCL classes to hide (nodata/defective/shadow/water/clouds/cirrus/snow) so the overlay
 # reads as land greenery with the basemap water showing through.

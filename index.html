@@ -98,6 +98,9 @@
     import { SECTIONS } from './js/config.js';
     import { initScrolly } from './js/scrolly.js';
     import { aboutDataHTML } from './js/metadata.js';
+    import { initInspect } from './js/inspect.js';
+    import { ndviLayer } from './js/layers/ndvi.js';
+    import { thermalLayer } from './js/layers/thermal.js';
 
     // Populate the "About the data" panel from the single metadata source.
     document.getElementById('about-data').innerHTML = aboutDataHTML();
@@ -112,6 +115,8 @@
     // The hero step activates on load and flies from the wide intro framing (zoom 9)
     // down to the whole island (zoom 11) — a cinematic zoom-in.
     const story = initScrolly(map, SECTIONS, { onLayerError });
+    // Click the map to read the NDVI / temperature value under the cursor.
+    initInspect(map, { ndvi: ndviLayer, thermal: thermalLayer });
     // Expose for deep-linking (#section in URL) and debugging.
     window.__map = map;
     window.__story = story;

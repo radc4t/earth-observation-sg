@@ -17,10 +17,9 @@ bounding box must be used as the Leaflet image-overlay bounds
 ([[south, west], [north, east]]) in js/layers/ndvi.js and js/layers/thermal.js.
 
 ------------------------------------------------------------------------------
-COLOUR-RAMP SINGLE SOURCE OF TRUTH  (paired edit — keep in sync!)
-The VIRIDIS_STOPS and INFERNO_STOPS below are the canonical ramps. The identical
-hex values are duplicated in js/config.js (the `legendHTML` SVG gradients). If you
-change a ramp here, change it there too, or the overlay and its legend will drift.
+COLOUR RAMPS come from the single source of truth, js/ramps.js, loaded via ramps.py.
+There is nothing to keep in sync by hand — the JS legends/inspect and these Python LUTs
+all read the same stops.
 ------------------------------------------------------------------------------
 
 Run:
@@ -46,24 +45,12 @@ OUT_DIR = os.path.normpath(
 BBOX = dict(west=103.60, south=1.205, east=104.04, north=1.475)
 
 # ---------------------------------------------------------------------------
-# Colour ramps — CANONICAL. Mirror these exact hex stops in js/config.js.
-# Positions are 0..1; colours are the classic matplotlib viridis / inferno anchors.
+# Colour ramps — loaded from the single source of truth (js/ramps.js) via ramps.py.
 # ---------------------------------------------------------------------------
-VIRIDIS_STOPS = [
-    (0.00, "#440154"),
-    (0.25, "#3b528b"),
-    (0.50, "#21918c"),
-    (0.75, "#5ec962"),
-    (1.00, "#fde725"),
-]
-INFERNO_STOPS = [
-    (0.00, "#000004"),
-    (0.25, "#420a68"),
-    (0.50, "#932667"),
-    (0.75, "#dd513a"),
-    (0.90, "#fca50a"),
-    (1.00, "#fcffa4"),
-]
+from ramps import load_ramps
+_R = load_ramps()
+VIRIDIS_STOPS = _R["viridis"]
+INFERNO_STOPS = _R["inferno"]
 
 
 def _hex_to_rgb(h):
