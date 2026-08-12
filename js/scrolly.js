@@ -149,10 +149,32 @@ export function initScrolly(map, sections, opts = {}) {
     }, MOTION.durPanel + 80);
   }
 
+  // Fade the legend panel out now and clear its content once faded. Used both when a section has
+  // no legend and (M4) when the maritime layer travels in with the camera and the outgoing thermal
+  // legend must not linger over the ships.
+  function hideLegendNow() {
+    if (!legendWrap) return;
+    if (legendClearTimer) {
+      clearTimeout(legendClearTimer);
+      legendClearTimer = null;
+    }
+    clearMorph(); // cancel any in-flight morph
+    legendWrap.classList.remove('is-shown'); // panel fades out via CSS
+    // Clear the content only after the fade so it doesn't blank abruptly.
+    const clear = () => {
+      if (!legendWrap.classList.contains('is-shown')) legendEl.innerHTML = '';
+      legendClearTimer = null;
+    };
+    // 350ms = local "clear after the panel has faded out" delay (must stay >= the panel fade so
+    // content doesn't blank early); a one-off, not a shared motion token.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) clear();
+    else legendClearTimer = setTimeout(clear, 350);
+  }
+
   function updateLegend(section, opts = {}) {
     if (!legendEl) return;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (legendClearTimer) {
+    if (section.legendHTML && legendClearTimer) {
       clearTimeout(legendClearTimer);
       legendClearTimer = null;
     }
@@ -179,18 +201,8 @@ export function initScrolly(map, sections, opts = {}) {
         legendEl.classList.remove('is-swapping');
       }
       if (legendWrap) legendWrap.classList.add('is-shown'); // panel fades in via CSS
-    } else if (legendWrap) {
-      clearMorph(); // hiding: cancel any in-flight morph
-      legendWrap.classList.remove('is-shown'); // panel fades out via CSS
-      // Clear the content only after the fade so it doesn't blank abruptly.
-      const clear = () => {
-        if (!legendWrap.classList.contains('is-shown')) legendEl.innerHTML = '';
-        legendClearTimer = null;
-      };
-      // 350ms = local "clear after the panel has faded out" delay (must stay >= the panel
-      // fade so content doesn't blank early); a one-off, not a shared motion token.
-      if (reduced) clear();
-      else legendClearTimer = setTimeout(clear, 350);
+    } else {
+      hideLegendNow();
     }
   }
 
@@ -257,6 +269,13 @@ export function initScrolly(map, sections, opts = {}) {
     // hide the inspect affordance (the reader mustn't be told to click data that isn't visible yet).
     const incoming = applyLayersImmediate(section);
     signalRasterVisible(null);
+
+    // A vector layer with no fade (maritime) travels WITH the camera: mount it BEFORE the flyTo so
+    // the pane transform carries it in (its motion stays frozen until moveend via maritime.js's
+    // mapMoving guard). Raster overlays fade, so they develop in on the glide's tail (below).
+    const travelsWithCamera = !!(incoming && incoming.deferReveal === false);
+    if (travelsWithCamera) incoming.setVisible(map, true);
+
     scheduleFly(); // camera begins now
 
     // Methods dims the map to a paper ground. This is the ONLY Methods-specific behaviour —
@@ -264,17 +283,19 @@ export function initScrolly(map, sections, opts = {}) {
     // class flips off on every other section, so the wash never lingers.
     document.body.classList.toggle('methods-active', section.kind === 'methods');
 
-    // A section with no legend hides the panel now (outgoing chrome clears promptly). A section
-    // WITH a legend defers its show to the raster reveal, so the key never claims the new
-    // measurement before the measurement starts appearing.
+    // Legend timing. A section with no legend hides the panel now. A travels-with-camera layer
+    // (maritime) also hides the OUTGOING legend now — the thermal legend must not linger over the
+    // ships during the southward glide — and brings its own legend in on the tail. A raster section
+    // defers its legend to the raster reveal, so the key never claims the new measurement early.
     const hasLegend = !!section.legendHTML;
     if (!hasLegend) updateLegend(section);
+    else if (travelsWithCamera) hideLegendNow();
 
-    // The evidence: the incoming overlay develops in, its legend transitions with it, and only
-    // now — once the raster is visually established — does the inspect affordance appear.
+    // The evidence: the incoming overlay develops in (rasters only — maritime is already visible),
+    // its legend transitions with it, and only now does the inspect affordance appear.
     const revealEvidence = () => {
       overlayTimer = null;
-      if (incoming) incoming.setVisible(map, true);
+      if (incoming && !travelsWithCamera) incoming.setVisible(map, true);
       if (hasLegend) updateLegend(section, { morph });
       signalRasterVisible(incoming && incoming.key ? incoming.key : null);
     };

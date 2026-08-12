@@ -159,9 +159,10 @@ export const SECTIONS = [
   {
     id: 'maritime',
     kind: 'section',
-    // Same longitude as heat, so the move to the Strait is a smooth vertical glide south
-    // (a slightly longer duration eases the bigger jump down to the ships).
-    camera: { center: [1.205, 103.8], zoom: 11.5, duration: 2.6 },
+    // Same longitude as heat, so the move to the Strait is a smooth vertical glide south. The
+    // maritime layer travels in with this camera (mounted before the fly), so the duration sets
+    // how the trip to the Strait feels — tuned to read as travelling to a new observation site.
+    camera: { center: [1.205, 103.8], zoom: 11.5, duration: 2.4 },
     layerConfig: {
       id: maritimeLayer.id,
       sourceId: maritimeLayer.sourceId,

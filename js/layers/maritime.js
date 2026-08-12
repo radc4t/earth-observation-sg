@@ -184,6 +184,11 @@ export const maritimeLayer = {
   id: 'vessels',
   key: 'maritime',
   sourceId: 'vessels-source',
+  // The raster overlays fade in, so the scrolly coordinator "develops them in" on the glide's
+  // tail. This is a VECTOR group with no fade — it should travel WITH the camera instead, mounted
+  // before the flyTo (then carried by the pane transform, its motion frozen until moveend). This
+  // one declarative flag tells the coordinator that; all transition timing stays in scrolly.js.
+  deferReveal: false,
 
   add(map) {
     if (laneGroup) return;
