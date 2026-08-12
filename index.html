@@ -29,6 +29,8 @@
       tabindex="0"
       aria-describedby="inspect-help"
     ></div>
+    <!-- Paper wash that dims the map to a calm ground during the Methods chapter -->
+    <div id="map-wash" aria-hidden="true"></div>
     <p id="inspect-help" class="sr-only">
       Click the map to read a value at that point, or press Enter to read the value at the map
       centre. Press R to read again.
@@ -188,6 +190,47 @@
         </div>
       </section>
 
+      <section class="step step--methods" data-id="methods">
+        <div class="card card--methods">
+          <p class="kicker"><span class="kicker-label">04 · Methods</span></p>
+          <h2>How these pictures were made</h2>
+          <p class="datatag">Field notes</p>
+          <p class="method-lede">
+            Three layers, three kinds of observation — each from public, free satellite data, shown
+            as honestly as we can.
+          </p>
+          <!-- Per-layer provenance rows are generated from js/metadata.js (single source). -->
+          <div id="methods-body"></div>
+
+          <details class="about">
+            <summary>Full provenance &amp; credits</summary>
+            <div class="about-body">
+              <p>
+                <strong>Basemaps (real imagery):</strong>
+                <a href="https://s2maps.eu" target="_blank" rel="noopener"
+                  >EOX Sentinel-2 cloudless</a
+                >
+                (Copernicus Sentinel-2), with a neutral
+                <a href="https://www.esri.com" target="_blank" rel="noopener"
+                  >Esri light-grey reference basemap</a
+                >
+                as an alternative ground.
+              </p>
+              <p class="snapshot-note">
+                The layers are different acquisitions, not a same-day comparison. Surface
+                temperature is the heat radiating from the ground — hotter than the air temperature.
+                Full band-level processing and one-line data-swap instructions are in
+                <a href="docs/swap-instructions.md">docs/swap-instructions.md</a>.
+              </p>
+              <p class="credits">
+                Basemaps © EOX IT Services GmbH · © Esri, HERE, Garmin, © OpenStreetMap contributors
+                · Contains modified Copernicus Sentinel data. Map rendering by Leaflet.
+              </p>
+            </div>
+          </details>
+        </div>
+      </section>
+
       <section class="step step--outro" data-id="outro">
         <div class="card">
           <p class="kicker">Earth Observation Initiative</p>
@@ -198,36 +241,6 @@
             satellite data into understanding people can act on.
             <strong>Public agencies observe the Earth so the public can see it too.</strong>
           </p>
-
-          <details class="about">
-            <summary>About the data</summary>
-            <div class="about-body">
-              <p>
-                <strong>Real imagery:</strong> the satellite basemap is genuine, free, public data —
-                <a href="https://s2maps.eu" target="_blank" rel="noopener"
-                  >EOX Sentinel-2 cloudless</a
-                >
-                (Copernicus Sentinel-2). A neutral
-                <a href="https://www.esri.com" target="_blank" rel="noopener"
-                  >Esri light-grey reference basemap</a
-                >
-                is also available, to let the data stand out.
-              </p>
-              <!-- Per-layer provenance is generated from js/metadata.js (single source of truth). -->
-              <div id="about-data"></div>
-              <p class="snapshot-note">
-                Each layer is a single-date snapshot: <strong>NDVI 28 Jul 2024</strong> (Sentinel-2)
-                and <strong>surface temperature 6 Jul 2025</strong> (Landsat 9). They are different
-                acquisitions, not a same-day comparison. Surface temperature is the heat radiating
-                from the ground — hotter than the air temperature. See
-                <a href="docs/swap-instructions.md">docs/swap-instructions.md</a>.
-              </p>
-              <p class="credits">
-                Basemaps © EOX IT Services GmbH · © Esri, HERE, Garmin, © OpenStreetMap contributors
-                · Contains modified Copernicus Sentinel data. Map rendering by Leaflet.
-              </p>
-            </div>
-          </details>
         </div>
       </section>
     </main>

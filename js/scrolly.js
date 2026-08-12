@@ -125,6 +125,11 @@ export function initScrolly(map, sections, opts = {}) {
     updateLegend(section);
     scheduleFly();
 
+    // Methods dims the map to a paper ground. This is the ONLY Methods-specific behaviour —
+    // overlays/legend/inspector are already off via the engine's null-layer state above. The
+    // class flips off on every other section, so the wash never lingers.
+    document.body.classList.toggle('methods-active', section.kind === 'methods');
+
     // Then the card rises, a beat later. Clear any pending reveal so fast scrolling can't
     // fire a stale section's card over the current one.
     if (revealTimer) {

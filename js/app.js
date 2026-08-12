@@ -5,15 +5,15 @@
 import { createMap, registerBasemapToggle, registerOverlays, onLayerError } from './map.js';
 import { SECTIONS } from './config.js';
 import { initScrolly } from './scrolly.js';
-import { aboutDataHTML } from './metadata.js';
+import { methodsHTML } from './metadata.js';
 import { initInspect } from './inspect.js';
 import { registerThemeToggle } from './theme.js';
 import { RAMPS, rampGradientCss } from './ramps.js';
 import { ndviLayer } from './layers/ndvi.js';
 import { thermalLayer } from './layers/thermal.js';
 
-// Populate the "About the data" panel from the single metadata source.
-document.getElementById('about-data').innerHTML = aboutDataHTML();
+// Populate the Methods chapter's per-layer provenance rows from the single metadata source.
+document.getElementById('methods-body').innerHTML = methodsHTML();
 
 const map = createMap('map');
 const modules = [

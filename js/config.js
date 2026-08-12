@@ -185,6 +185,21 @@ export const SECTIONS = [
     },
   },
   {
+    // Methods = a quiet "field notes" beat after maritime: the map dims to a paper ground
+    // (scrolly's kind:'methods' branch) and the card explains what each layer is + how it was
+    // made. layerConfig:null means the existing engine hides overlays/legend/inspector — no
+    // Methods-specific layer lifecycle. A camera is still required (scheduleFly reads it); the
+    // fly happens under the wash, so this whole-island framing is just a safe default.
+    id: 'methods',
+    kind: 'methods',
+    camera: { center: [1.352, 103.82], zoom: 10.5, duration: 1.6 },
+    layerConfig: null,
+    legendHTML: '',
+    copy: {
+      title: 'How these pictures were made',
+    },
+  },
+  {
     id: 'outro',
     kind: 'outro',
     camera: { center: [1.352, 103.82], zoom: 10.5, duration: 2.2 },

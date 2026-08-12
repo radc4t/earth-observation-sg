@@ -229,6 +229,28 @@ body {
   white-space: nowrap;
   border: 0;
 }
+
+/* Paper wash: dims the map to a calm ground during the Methods chapter. Sits above the map
+   (z:0) and below the story cards (z:2). Opacity is a tuned value — the map stays perceptible
+   but clearly subordinate, not a blank page. */
+#map-wash {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: var(--paper);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+body.methods-active #map-wash {
+  opacity: 0.88;
+}
+@media (prefers-reduced-motion: reduce) {
+  #map-wash {
+    transition: none;
+  }
+}
+
 /* Leaflet controls & attribution — theme-aware (tokens adapt to light/dark). */
 .leaflet-container {
   background: var(--bg);
@@ -798,6 +820,63 @@ body {
 .about .credits {
   font-size: 11.5px;
   opacity: 0.8;
+}
+
+/* ---- Methods chapter ---- */
+/* A field-notebook interlude. Only slightly wider than a chapter card — the controlled reading
+   measure is preserved; the extra information is handled with structured rows + dividers, not
+   longer lines. */
+.card--methods {
+  width: 440px;
+}
+.card--methods .method-lede {
+  color: var(--ink-2);
+  font-size: 15.5px;
+  line-height: 1.6;
+  margin: 0 0 6px;
+}
+#methods-body {
+  margin: 4px 0 2px;
+}
+.method-row {
+  padding: 13px 0;
+  border-top: 1px solid var(--border);
+}
+.method-row:first-child {
+  border-top: 0;
+}
+.method-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.method-name {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+}
+.method-spec {
+  margin: 5px 0 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+.method-note {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.method-caveat {
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
 }
 
 /* vessel popup (Leaflet) */
