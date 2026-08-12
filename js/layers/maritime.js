@@ -32,6 +32,11 @@ let vesselGroup = null; // L.LayerGroup for vessel markers
 let rafId = null;
 let running = false;
 let visible = false;
+// While the map is animating a zoom/pan (e.g. a scroll-triggered flyTo), Leaflet moves
+// the whole pane via a CSS transform. Calling marker.setLatLng() during that window
+// reprojects the dots to the target view immediately, so they detach from the lane lines
+// and "fly off". We pause position updates while the map is moving/zooming.
+let mapMoving = false;
 
 // ---- geometry helpers -----------------------------------------------------
 function haversine(a, b) {
@@ -123,6 +128,11 @@ export const maritimeLayer = {
     });
     vesselGroup = L.layerGroup();
     buildVessels(map, 25);
+
+    // Freeze vessel repositioning while the map animates (zoom/pan), then let it settle
+    // for a frame — so the dots stay glued to the lane lines instead of flying off.
+    map.on('zoomstart movestart', () => { mapMoving = true; });
+    map.on('zoomend moveend', () => { mapMoving = false; });
   },
 
   setVisible(map, show) {
@@ -145,6 +155,9 @@ export const maritimeLayer = {
     let last = performance.now();
     const tick = (now) => {
       if (!running) return;
+      // While the map is mid animation, hold position (the pane transform carries the
+      // dots with the lines); just keep the clock current so we don't jump on resume.
+      if (mapMoving) { last = now; rafId = requestAnimationFrame(tick); return; }
       const dt = Math.min((now - last) / 1000, 0.1);
       last = now;
       for (const v of vessels) {
