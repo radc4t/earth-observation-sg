@@ -280,6 +280,14 @@ body.methods-active #map-wash {
 }
 .data-overlay {
   image-rendering: auto;
+  /* The NDVI/thermal cross-fade lives here (not inline in JS) so prefers-reduced-motion can turn
+     it off. Leaflet's setOpacity changes inline opacity; this transition animates that change. */
+  transition: opacity var(--dur-panel) var(--ease-ground);
+}
+@media (prefers-reduced-motion: reduce) {
+  .data-overlay {
+    transition: none;
+  }
 }
 
 /* ---- basemap selector (a quiet Field Report control, not a GIS toolbar) ---- */

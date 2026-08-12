@@ -10,7 +10,6 @@
 import { sampleImageNorm, buildLut } from '../sample.js';
 import { RAMPS } from '../ramps.js';
 import { LAYER_META } from '../metadata.js';
-import { MOTION, cssTransition } from '../motion.js';
 
 // Bounds MUST match BBOX in generate_overlays.py.
 // Leaflet bounds order: [[south, west], [north, east]]
@@ -54,13 +53,8 @@ export const ndviLayer = {
       interactive: false,
       className: 'data-overlay',
     }).addTo(map);
-    // Overlay fade shares the "panel" duration + ground easing (see js/motion.js).
-    if (this._layer.getElement())
-      this._layer.getElement().style.transition = cssTransition(
-        'opacity',
-        MOTION.durPanel,
-        MOTION.easeGround
-      );
+    // The opacity fade is defined in CSS on `.data-overlay` (so `prefers-reduced-motion` can turn
+    // it off — an inline transition here couldn't be overridden by the media query).
   },
 
   setVisible(map, visible) {
