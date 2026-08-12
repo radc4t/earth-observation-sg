@@ -1,0 +1,11 @@
+{
+  "id": "LC09_L2SP_125059_20250706_02_T1",
+  "dt": "2025-07-06",
+  "platform": "landsat-9",
+  "cloud": 5.59,
+  "tminC": 31.0,
+  "tmaxC": 47.0,
+  "sourceResolution": "30 m (100 m thermal)",
+  "displayResolution": "~32 m/px",
+  "outWidth": 1536
+}

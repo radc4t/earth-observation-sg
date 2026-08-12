@@ -22,12 +22,16 @@ export const LAYER_META = {
     rampEnds: ['Bare / built', 'Dense canopy'],
   },
   thermal: {
-    real: false,
+    real: true,
     title: 'Land surface temperature',
-    // Named so the placeholder can never be mistaken for an observation.
-    badge: 'Illustration',
-    illustrationNote: 'Illustration — not observational data',
-    realSource: 'Landsat 8/9 thermal band (Collection 2 surface temperature)',
+    source: 'Landsat 9 · Collection 2',
+    date: '6 Jul 2025',
+    sourceResolution: '30 m (100 m thermal)',
+    displayResolution: '~32 m/px',
+    units: '°C',
+    tminC: 31,
+    tmaxC: 47,
+    processing: ['ST_B10 → °C', 'cloud & shadow masked (QA_PIXEL)'],
     rampEnds: ['Cooler', 'Hotter'],
   },
   maritime: {

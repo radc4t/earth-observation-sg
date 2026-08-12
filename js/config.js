@@ -45,6 +45,27 @@ function rampSvg(stops, leftLabel, rightLabel, id) {
     </div>`;
 }
 
+// A colour ramp annotated with real numeric ticks (e.g. °C) beneath it.
+function valueRamp(stops, ticks, unit, id) {
+  const gid = `grad-${id}`;
+  const offsets = stops
+    .map((c, i) => `<stop offset="${(i / (stops.length - 1)) * 100}%" stop-color="${c}"/>`)
+    .join('');
+  return `
+    <div class="legend-ramp">
+      <svg viewBox="0 0 200 12" preserveAspectRatio="none" width="100%" height="12" role="img"
+           aria-label="colour scale from ${ticks[0]}${unit} to ${ticks[ticks.length - 1]}${unit}">
+        <defs><linearGradient id="${gid}" x1="0" x2="1" y1="0" y2="0">${offsets}</linearGradient></defs>
+        <rect x="0" y="0" width="200" height="12" rx="2" fill="url(#${gid})"/>
+      </svg>
+      <div class="legend-ticks">${ticks.map((t) => `<span>${t}${unit}</span>`).join('')}</div>
+    </div>`;
+}
+
+function tempTicks(min, max, n = 4) {
+  return Array.from({ length: n }, (_, i) => Math.round(min + ((max - min) * i) / (n - 1)));
+}
+
 function vesselSwatches() {
   return (
     '<div class="legend-swatches">' +
@@ -100,9 +121,8 @@ export const SECTIONS = [
     layerConfig: { id: thermalLayer.id, sourceId: thermalLayer.sourceId, module: thermalLayer, visible: true },
     legendHTML:
       `<h3>${M.thermal.title}</h3>` +
-      illustrationTag(M.thermal) +
-      rampSvg(INFERNO_STOPS, M.thermal.rampEnds[0], M.thermal.rampEnds[1], 'thermal') +
-      illustrationNote(M.thermal),
+      valueRamp(INFERNO_STOPS, tempTicks(M.thermal.tminC, M.thermal.tmaxC), '°', 'thermal') +
+      realNote(M.thermal, 'clouds &amp; shadow masked'),
     copy: {
       title: 'The city makes its own heat',
       body:

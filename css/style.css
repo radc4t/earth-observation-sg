@@ -103,13 +103,14 @@ html, body {
 .legend { padding: 0 14px 14px; }
 .legend h3 { margin: 4px 0 10px; font-size: 14px; }
 .legend-ramp { margin: 8px 0 6px; }
-.legend-ends {
+.legend-ends, .legend-ticks {
   display: flex;
   justify-content: space-between;
   color: var(--ink-dim);
   font-size: 11px;
   margin-top: 4px;
 }
+.legend-ticks span { flex: 0 0 auto; }
 .legend-note { color: var(--ink-dim); font-size: 11px; margin: 8px 0 0; line-height: 1.4; }
 /* prominent "Illustration"/"Simulation" tag so a placeholder is never read as real data */
 .legend-badge {

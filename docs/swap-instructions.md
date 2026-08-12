@@ -39,21 +39,32 @@ If you keep the same bounds, omit `bounds` (it defaults to the placeholder's rec
 
 ---
 
-## 2. Thermal / land-surface temperature — `js/layers/thermal.js`
+## 2. Thermal / land-surface temperature — `js/layers/thermal.js`  ✅ already real
 
-**Placeholder:** `assets/overlays/thermal.png` (inferno ramp), same corner mechanism.
+**Live layer:** `assets/overlays/thermal_real.png` — **genuine Landsat 9 Collection-2
+land-surface temperature** in real °C (6 Jul 2025, cloud & shadow masked), built by
+[`scripts/generate-placeholders/build_real_thermal.py`](../scripts/generate-placeholders/build_real_thermal.py).
+That script finds the least-cloudy Landsat 8/9 L2 scene over Singapore via the free,
+keyless **Microsoft Planetary Computer** STAC + SAS signing API, reads the ST_B10 band
+(`lwir11`) and QA (`qa_pixel`) with `rasterio`, converts DN → °C
+(`DN*0.00341802 + 149.0 − 273.15`), masks cloud/shadow/fill, and colourises inferno over a
+robust °C range. The display range (tminC/tmaxC in `js/metadata.js`) drives the legend
+ticks. Rebuild any time:
 
-**Get real data:** derive Land Surface Temperature from a Landsat 8/9 thermal band
-(Band 10, TIRS) — many published recipes exist — and export a colour-mapped raster
-clipped to the same bounds.
+```bash
+python3 scripts/generate-placeholders/build_real_thermal.py   # needs rasterio + numpy + Pillow
+```
 
-**Swap (one call):**
+**Placeholder (kept for reference):** `assets/overlays/thermal.png`, from `generate_overlays.py`.
+
+**Swap to a different raster** (e.g. your own Landsat/ECOSTRESS export, same bounds):
 ```js
 import { thermalLayer } from './js/layers/thermal.js';
 // Leaflet bounds: [[south, west], [north, east]]
 thermalLayer.swapWithRealRaster(map, 'assets/overlays/thermal_real.png', bounds);
 ```
-Keep `INFERNO_STOPS` in `generate_overlays.py` and `js/config.js` in sync if re-coloured.
+If you re-colour, keep `INFERNO_STOPS` in the Python scripts and `js/config.js` in sync,
+and update tminC/tmaxC in `js/metadata.js` so the legend ticks match.
 
 ---
 

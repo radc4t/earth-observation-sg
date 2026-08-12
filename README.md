@@ -21,10 +21,13 @@ locations as you scroll.
   The source bands are **10 m**; the exported overlay is that source resampled to
   **~16 m/px** for display — it is *not* a 10 m raster (a single full-resolution PNG would
   be far too large; a COG/XYZ tile pipeline is the path to true full-res, noted below).
-- **Illustrations, not observations:** the **thermal and vessel overlays are designed
-  placeholders**, tagged as such in their legends. They read correctly (heat over the
-  industrial west, ships along the Strait) but are **not** measured data. Each is wired to
-  accept real data via a one-line swap — see
+- **Real surface temperature:** the **thermal layer is genuine Landsat 9** Collection-2
+  land-surface temperature in real **°C** (6 Jul 2025, cloud & shadow masked), from the
+  keyless Microsoft Planetary Computer archive via
+  [`scripts/generate-placeholders/build_real_thermal.py`](scripts/generate-placeholders/build_real_thermal.py).
+  Landsat's thermal band is 100 m (USGS-resampled to 30 m), displayed at ~32 m/px.
+- **One illustration remains:** the **vessel layer** shows *simulated* tracks, tagged in
+  its legend — **not** live AIS. Wired to accept a real AIS feed via a one-line swap — see
   [`docs/swap-instructions.md`](docs/swap-instructions.md).
 
 This honest separation is deliberate: it keeps the prototype truthful while the visual
@@ -68,9 +71,10 @@ js/
     ndvi.js                vegetation image overlay + swapWithRealRaster()
     thermal.js             thermal image overlay + swapWithRealRaster()
     maritime.js            animated vessels + rAF loop + replaceWithRealAIS()
-assets/overlays/           ndvi_real.png (real Sentinel-2 NDVI), ndvi.png/thermal.png (placeholders)
+assets/overlays/           ndvi_real.png + thermal_real.png (real); ndvi.png/thermal.png (placeholders)
 scripts/generate-placeholders/generate_overlays.py   reproducible placeholder generator
-scripts/generate-placeholders/build_real_ndvi.py     real Sentinel-2 NDVI pipeline (STAC + rasterio)
+scripts/generate-placeholders/build_real_ndvi.py     real Sentinel-2 NDVI pipeline (AWS STAC + rasterio)
+scripts/generate-placeholders/build_real_thermal.py  real Landsat surface temp (Planetary Computer + rasterio)
 docs/swap-instructions.md  per-layer real-data swap guide
 ```
 
