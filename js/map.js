@@ -56,11 +56,29 @@ export function createMap(container = 'map') {
     attributionControl: true,
     keyboard: true, // accessibility
     worldCopyJump: false,
+    // This is a scroll-driven story: a plain wheel/two-finger scroll must move the page,
+    // not zoom the map. Wheel-zoom is handled manually below, gated on Ctrl/⌘ (and
+    // trackpad pinch, which browsers deliver as a ctrl+wheel event).
+    scrollWheelZoom: false,
+    zoomSnap: 0, // allow smooth fractional zoom from the manual wheel handler
   });
   map.attributionControl.setPrefix(
     '<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>'
   );
   L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+  // Intentional wheel-zoom: only when Ctrl/⌘ is held or a trackpad pinch is used.
+  // Otherwise the event is left alone so the story scrolls normally.
+  map.getContainer().addEventListener(
+    'wheel',
+    (e) => {
+      if (!(e.ctrlKey || e.metaKey)) return; // plain scroll → page scrolls
+      e.preventDefault();
+      const factor = Math.max(-1, Math.min(1, -e.deltaY * 0.01));
+      map.setZoomAround(map.mouseEventToLatLng(e), map.getZoom() + factor);
+    },
+    { passive: false }
+  );
 
   Object.values(BASEMAPS).forEach((b) => {
     const layer = L.tileLayer(b.url, {
