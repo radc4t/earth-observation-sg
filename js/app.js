@@ -68,6 +68,14 @@ if (location.hash) {
 // rail's URL-hash sync can never clobber location.hash before jumpTo has consumed it.
 initNav(SECTIONS);
 
+// Live deep-linking: honour hash changes AFTER load too (a pasted/edited URL, or a shared link
+// opened in an already-open tab). nav.js only ever updates the hash via history.replaceState, which
+// does NOT fire 'hashchange', so this reacts solely to genuine user navigation — no feedback loop.
+// Unknown ids (e.g. the "#story" skip-link) are a no-op: jumpTo() bails when the id isn't a section.
+window.addEventListener('hashchange', () => {
+  if (location.hash) story.jumpTo(location.hash.slice(1));
+});
+
 // Icons for the static-HTML controls (decorative Lucide glyphs; the control's text / aria-label
 // carries the accessible name). Injected once at init — a failed lookup degrades to text.
 function initIcons() {
