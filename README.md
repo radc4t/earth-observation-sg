@@ -110,6 +110,16 @@ python3 -m http.server 8000
 Development stays **build‑free** — vanilla ES modules + [Leaflet](https://leafletjs.com) from a CDN
 (needs internet for map tiles). The optimized bundle below is only for deployment.
 
+> **Editing JS/CSS and not seeing changes?** A plain `http.server` sends no cache headers, so the
+> browser caches the ES modules aggressively and a reload can keep running stale code. Use the
+> no‑cache dev server **and** open it from the `127.0.0.1` origin (a distinct origin from
+> `localhost`, so it never reuses a cached module map):
+>
+> ```bash
+> python3 scripts/nocache_server.py   # serves . on 127.0.0.1:8000 with Cache-Control: no-store
+> # open http://127.0.0.1:8000
+> ```
+
 ## Tooling — lint / format / build / deploy
 
 Optional dev tooling lives behind `npm` (Node 18+) and Python `ruff`; the app itself never requires a
