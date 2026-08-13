@@ -5,6 +5,8 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![No framework](https://img.shields.io/badge/build-vanilla%20ES%20modules-informational?style=flat-square)](#run-it-locally-no-build-step)
 
+[![Singapore from Space — the Field Report data story: the hero chapter over a live Sentinel‑2 satellite map](docs/hero.jpg)](https://radc4t.github.io/earth-observation-sg/)
+
 A scrolling data story that shows citizens what Singapore looks like from Earth‑observation
 satellites, and explains what the data reveals: **green cover** (vegetation index), **urban heat**
 (land‑surface temperature), and **maritime traffic** in the Singapore Strait. It’s built around a
