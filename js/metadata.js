@@ -63,20 +63,18 @@ export const LAYER_META = {
 // in index.html. Order follows the story.
 export function methodsHTML() {
   const order = ['ndvi', 'thermal', 'maritime'];
-  const badge = (m) =>
-    m.real
-      ? '<span class="legend-badge legend-badge--real">REAL</span>'
-      : '<span class="legend-badge legend-badge--illus">ILLUSTRATION</span>';
   const rows = order
     .map((k) => {
       const m = LAYER_META[k];
+      // Real-vs-illustration is carried by the spec line itself ("Simulated tracks · real source:
+      // …" vs "<source> · <date> · <resolution> source") — no separate badge needed.
       const spec = m.real
         ? `${m.source} · ${m.date} · ${m.sourceResolution} source`
         : `Simulated tracks · real source: ${m.realSource}`;
       const note = m.real ? m.methodNote : m.illustrationNote;
       return (
         `<div class="method-row">` +
-        `<div class="method-head"><span class="method-name">${m.title}</span>${badge(m)}</div>` +
+        `<div class="method-head"><span class="method-name">${m.title}</span></div>` +
         `<p class="method-spec">${spec}</p>` +
         `<p class="method-note">${note}</p>` +
         `</div>`

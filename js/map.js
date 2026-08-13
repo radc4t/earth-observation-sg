@@ -25,7 +25,7 @@ export const BASEMAPS = {
   // Default true-colour ground.
   sentinel2: {
     key: 'sentinel2',
-    label: 'Sentinel-2 cloudless',
+    label: 'Satellite',
     url: 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/{z}/{y}/{x}.jpg',
     attribution:
       'Sentinel-2 cloudless © <a href="https://s2maps.eu" target="_blank" rel="noopener">EOX IT Services GmbH</a> (Contains modified Copernicus Sentinel data)',
@@ -36,7 +36,7 @@ export const BASEMAPS = {
   // Neutral grey reference basemap — an alternative ground that lets the data dominate.
   esriLightGray: {
     key: 'esriLightGray',
-    label: 'Grey canvas',
+    label: 'Minimal',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
     attribution:
       'Tiles © <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>, HERE, Garmin, © OpenStreetMap contributors, and the GIS user community',
@@ -281,7 +281,7 @@ export function registerBasemapToggle(map, container) {
       btn.className = 'basemap-btn';
       btn.type = 'button';
       btn.textContent = b.label;
-      btn.setAttribute('aria-label', `Basemap: ${b.label}`);
+      btn.setAttribute('aria-label', `Map style: ${b.label}`);
       // A click sets the ground; setBasemap publishes state.basemap, which drives the sync.
       btn.addEventListener('click', () => setBasemap(map, b.key));
       buttons.set(b.key, btn);

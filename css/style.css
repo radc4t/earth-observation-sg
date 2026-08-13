@@ -628,45 +628,6 @@ details.about[open] > summary .icon {
   border-top: 1px solid var(--border); /* provenance divider — mirrors the story-card meta rule */
   line-height: 1.45;
 }
-/* At-a-glance classification pill. Shared shape; the modifier sets the colour: green REAL for
-   real data, ochre ILLUSTRATION for placeholders — parallel weight so neither out-shouts the
-   other. Uppercase label lives in the markup (config.js), not text-transform. */
-.legend-badge {
-  flex: 0 0 auto;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-family: var(--mono);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-}
-/* Badge text is darkened (toward black, staying on-hue) in the light theme so this small bold
-   label clears AA (~4.5:1) on the pale panel; the dark theme uses the lighter token directly,
-   which already clears AA on the dark panel. Backgrounds/borders stay token-derived tints. */
-.legend-badge--real {
-  color: color-mix(in srgb, var(--good) 78%, #000);
-  background: color-mix(in srgb, var(--good) 15%, transparent);
-  border: 1px solid color-mix(in srgb, var(--good) 42%, transparent);
-}
-.legend-badge--illus {
-  color: color-mix(in srgb, var(--illustration) 78%, #000);
-  background: color-mix(in srgb, var(--illustration) 16%, transparent);
-  border: 1px solid color-mix(in srgb, var(--illustration) 42%, transparent);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .legend-badge--real {
-    color: var(--good);
-  }
-  :root:not([data-theme]) .legend-badge--illus {
-    color: var(--illustration);
-  }
-}
-:root[data-theme='dark'] .legend-badge--real {
-  color: var(--good);
-}
-:root[data-theme='dark'] .legend-badge--illus {
-  color: var(--illustration);
-}
 .legend-unavailable {
   color: var(--critical);
   font-size: 11.5px;
@@ -877,10 +838,10 @@ details.about[open] > summary .icon {
   text-transform: uppercase;
 }
 .scroll-cue .arrow {
-  width: 14px;
-  height: 14px;
-  border-right: 2px solid var(--accent);
-  border-bottom: 2px solid var(--accent);
+  width: 10px;
+  height: 10px;
+  border-right: 1.5px solid var(--accent);
+  border-bottom: 1.5px solid var(--accent);
   transform: rotate(45deg);
   animation: bob 1.6s ease-in-out infinite;
 }
@@ -891,7 +852,7 @@ details.about[open] > summary .icon {
     opacity: 0.5;
   }
   50% {
-    transform: rotate(45deg) translate(3px, 3px);
+    transform: rotate(45deg) translate(2px, 2px);
     opacity: 1;
   }
 }
@@ -1362,8 +1323,7 @@ details.about[open] > summary .icon {
   .theme-toggle,
   .inspect-hint,
   #inspect-sheet,
-  .card-handle,
-  .legend-badge {
+  .card-handle {
     border: 1px solid CanvasText;
   }
   :focus-visible,
