@@ -17,7 +17,7 @@ const CARD_REVEAL_DELAY_MS = MOTION.delayNarrative;
 // third of the perceived journey" — retune against a real-motion recording. 0 when not flying
 // (same-camera transitions like Vegetation<->Heat keep their concurrent in-place cross-dissolve)
 // and under reduced motion.
-const OVERLAY_LEAD_RATIO = 0.55;
+const OVERLAY_LEAD_RATIO = 0.4;
 
 export function initScrolly(map, sections, opts = {}) {
   const legendEl = opts.legendEl || document.getElementById('legend');

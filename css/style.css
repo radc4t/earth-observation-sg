@@ -283,6 +283,18 @@ body.methods-active #map-wash {
   /* The NDVI/thermal cross-fade lives here (not inline in JS) so prefers-reduced-motion can turn
      it off. Leaflet's setOpacity changes inline opacity; this transition animates that change. */
   transition: opacity var(--dur-panel) var(--ease-ground);
+  /* Feather the four edges so the raster dissolves into the map instead of ending in a hard
+     rectangle over the sea / Johor. Two axis gradients composited to an inset alpha falloff.
+     Presentation only — sampling reads the source PNG (js/sample.js), not the mask. If the
+     composited mask ever proves unreliable, the reduced opacity above already softens the edge. */
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, #000 3%, #000 97%, transparent),
+    linear-gradient(to bottom, transparent, #000 3%, #000 97%, transparent);
+  -webkit-mask-composite: source-in; /* legacy WebKit keyword for "intersect" */
+  mask-image:
+    linear-gradient(to right, transparent, #000 3%, #000 97%, transparent),
+    linear-gradient(to bottom, transparent, #000 3%, #000 97%, transparent);
+  mask-composite: intersect;
 }
 @media (prefers-reduced-motion: reduce) {
   .data-overlay {
@@ -461,30 +473,15 @@ details.about[open] > summary .icon {
   opacity: 1;
   transform: none;
 }
-/* thin crosshair reticle glyph */
+/* crosshair reticle (Lucide, injected by app.js) — reads as "read at this point" */
 .inspect-hint .rt {
-  position: relative;
-  width: 13px;
-  height: 13px;
+  display: inline-flex;
   flex: 0 0 auto;
+  color: var(--accent);
 }
-.inspect-hint .rt::before,
-.inspect-hint .rt::after {
-  content: '';
-  position: absolute;
-  background: var(--accent);
-}
-.inspect-hint .rt::before {
-  left: 6px;
-  top: 0;
-  width: 1px;
-  height: 13px;
-}
-.inspect-hint .rt::after {
-  top: 6px;
-  left: 0;
-  height: 1px;
-  width: 13px;
+.inspect-hint .rt .icon {
+  width: 14px;
+  height: 14px;
 }
 @media (prefers-reduced-motion: reduce) {
   .inspect-hint {
@@ -820,10 +817,6 @@ details.about[open] > summary .icon {
   height: 10px;
   border-radius: 2px;
   flex: 0 0 auto;
-}
-/* maritime is illustrative, not a data ramp — a flat ochre marker, deliberately quiet */
-.card .datatag--illus .swatch {
-  background: var(--illustration);
 }
 .about-body .snapshot-note {
   color: var(--muted);

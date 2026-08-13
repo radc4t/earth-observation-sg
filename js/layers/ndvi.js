@@ -18,7 +18,7 @@ const BOUNDS = [
   [1.475, 104.04],
 ];
 
-const ACTIVE_OPACITY = 0.82;
+const ACTIVE_OPACITY = 0.7; // let the geography breathe through the data (M7 dial)
 
 const LUT = buildLut(RAMPS.viridis);
 

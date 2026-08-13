@@ -18,7 +18,7 @@ export const MOTION = {
   delayNarrative: 260, // evidence -> interpretation beat             (--delay-narrative)
   easeStandard: 'cubic-bezier(0.22, 1, 0.36, 1)', // UI arrival        (--ease-standard)
   easeGround: 'cubic-bezier(0.4, 0, 0.2, 1)', // symmetric fades    (--ease-ground)
-  easeLinearity: 0.22, // Leaflet flyTo easing — a STARTING value, tuned against real motion.
+  easeLinearity: 0.3, // Leaflet flyTo easing — higher = snappier glide, shorter soft tail (M7 dial).
 };
 
 // Build a CSS transition string for a single property from the tokens above, e.g.

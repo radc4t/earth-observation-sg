@@ -58,6 +58,10 @@ function initIcons() {
   const closeBtn = document.querySelector('.inspect-sheet-close');
   if (closeBtn) closeBtn.innerHTML = icon('x'); // aria-label="Close reading" stays on the button
 
+  // The "read a value" hint gets a real crosshair reticle (the old bespoke "+" read as add/zoom).
+  const rt = document.querySelector('.inspect-hint .rt');
+  if (rt) rt.innerHTML = icon('crosshair');
+
   // Legend collapse + the Methods <details> disclosure share one chevron; its direction is driven
   // by CSS from aria-expanded / [open], so nothing here (or later) rotates the SVG.
   const lc = document.getElementById('legend-collapse');

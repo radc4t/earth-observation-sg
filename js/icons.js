@@ -16,6 +16,11 @@ const BODIES = {
   'chevron-down': '<path d="m6 9 6 6 6-6"/>',
   x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
   'arrow-up-right': '<path d="M7 7h10v10"/><path d="M7 17 17 7"/>',
+  // A targeting reticle — reads as "read at this point", unlike the old bare "+".
+  crosshair:
+    '<circle cx="12" cy="12" r="10"/><line x1="22" x2="18" y1="12" y2="12"/>' +
+    '<line x1="6" x2="2" y1="12" y2="12"/><line x1="12" x2="12" y1="6" y2="2"/>' +
+    '<line x1="12" x2="12" y1="22" y2="18"/>',
 };
 
 // Return the inline SVG markup for a named icon (empty string for an unknown name, so a failed

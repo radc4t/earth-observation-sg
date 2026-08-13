@@ -106,7 +106,12 @@ export function createMap(container = 'map') {
     // not zoom the map. Wheel-zoom is handled manually below, gated on Ctrl/⌘ (and
     // trackpad pinch, which browsers deliver as a ctrl+wheel event).
     scrollWheelZoom: false,
-    zoomSnap: 0, // allow smooth fractional zoom from the manual wheel handler
+    // Snap the RESTING zoom to whole levels. flyTo still animates smoothly through fractional
+    // zooms; only the settled zoom snaps to an integer. This is what keeps tiles at their native
+    // pixel size at rest — a fractional resting zoom scales tiles to non-integer sizes, opening
+    // subpixel seams that reveal the themed page background as faint gridlines (M7). Trade-off: the
+    // manual Ctrl/⌘+wheel zoom now lands on integers instead of any fractional value.
+    zoomSnap: 1,
   });
   map.attributionControl.setPrefix(
     '<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>'

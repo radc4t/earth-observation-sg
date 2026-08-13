@@ -13,19 +13,11 @@ const M = LAYER_META;
 const VIRIDIS_STOPS = RAMPS.viridis;
 const INFERNO_STOPS = RAMPS.inferno;
 
-// Legend header: title + an at-a-glance classification badge. The badge answers "what kind
-// of data is this?" (REAL / ILLUSTRATION); the provenance note below answers "where from?".
-// Both badges share one pill style so the illustrative layer is never more prominent than the
-// real ones. Canonical uppercase text lives in the markup (not via CSS text-transform) so the
-// accessible label is unambiguous.
-function legendHead(title, badgeHTML) {
-  return `<div class="legend-head"><h3>${title}</h3>${badgeHTML}</div>`;
-}
-function realTag() {
-  return '<span class="legend-badge legend-badge--real">REAL</span>';
-}
-function illustrationTag(m) {
-  return `<span class="legend-badge legend-badge--illus">${m.badge.toUpperCase()}</span>`;
+// Legend header: just the layer title. The at-a-glance REAL / ILLUSTRATION classification lives in
+// the Methods chapter now — in the always-on legend it read as defensive clutter, and the
+// provenance note below already answers "real or illustrative, and from where?" calmly.
+function legendHead(title) {
+  return `<div class="legend-head"><h3>${title}</h3></div>`;
 }
 
 // Provenance note for a REAL layer, and the context note for an illustrative one — all
@@ -91,7 +83,7 @@ export const SECTIONS = [
   {
     id: 'hero',
     kind: 'hero',
-    camera: { center: [1.352, 103.82], zoom: 11, duration: 2.4 },
+    camera: { center: [1.352, 103.82], zoom: 11, duration: 1.8 },
     layerConfig: null,
     legendHTML: '',
     copy: {
@@ -106,7 +98,7 @@ export const SECTIONS = [
     kind: 'section',
     // Vegetation and heat share one camera (whole-island framing) so scrolling between
     // them cross-fades the NDVI and temperature layers in place — no zoom/pan jump.
-    camera: { center: [1.35, 103.8], zoom: 12, duration: 2 },
+    camera: { center: [1.35, 103.8], zoom: 12, duration: 1.4 },
     layerConfig: {
       id: ndviLayer.id,
       sourceId: ndviLayer.sourceId,
@@ -114,7 +106,7 @@ export const SECTIONS = [
       visible: true,
     },
     legendHTML:
-      legendHead(M.ndvi.title, realTag()) +
+      legendHead(M.ndvi.title) +
       rampSvg(VIRIDIS_STOPS, M.ndvi.rampEnds[0], M.ndvi.rampEnds[1], 'ndvi') +
       realNote(M.ndvi, 'clouds &amp; water masked'),
     copy: {
@@ -132,8 +124,10 @@ export const SECTIONS = [
   {
     id: 'heat',
     kind: 'section',
-    // Same camera as vegetation (see note there) — the layers swap without moving the map.
-    camera: { center: [1.35, 103.8], zoom: 12, duration: 2 },
+    // Same camera as vegetation (see note there) — the layers swap without moving the map, so
+    // this duration is INERT (no fly happens on Veg→Heat); it only matters if arriving from
+    // elsewhere. Kept in step with vegetation.
+    camera: { center: [1.35, 103.8], zoom: 12, duration: 1.4 },
     layerConfig: {
       id: thermalLayer.id,
       sourceId: thermalLayer.sourceId,
@@ -141,7 +135,7 @@ export const SECTIONS = [
       visible: true,
     },
     legendHTML:
-      legendHead(M.thermal.title, realTag()) +
+      legendHead(M.thermal.title) +
       valueRamp(INFERNO_STOPS, tempTicks(M.thermal.tminC, M.thermal.tmaxC), '°C', 'thermal') +
       realNote(M.thermal, 'clouds, shadow &amp; water masked'),
     copy: {
@@ -162,17 +156,14 @@ export const SECTIONS = [
     // Same longitude as heat, so the move to the Strait is a smooth vertical glide south. The
     // maritime layer travels in with this camera (mounted before the fly), so the duration sets
     // how the trip to the Strait feels — tuned to read as travelling to a new observation site.
-    camera: { center: [1.205, 103.8], zoom: 11.5, duration: 2.4 },
+    camera: { center: [1.205, 103.8], zoom: 11, duration: 1.8 },
     layerConfig: {
       id: maritimeLayer.id,
       sourceId: maritimeLayer.sourceId,
       module: maritimeLayer,
       visible: true,
     },
-    legendHTML:
-      legendHead(M.maritime.title, illustrationTag(M.maritime)) +
-      vesselSwatches() +
-      illustrationNote(M.maritime),
+    legendHTML: legendHead(M.maritime.title) + vesselSwatches() + illustrationNote(M.maritime),
     copy: {
       title: 'One of the world’s busiest waterways',
       body:
@@ -193,7 +184,7 @@ export const SECTIONS = [
     // fly happens under the wash, so this whole-island framing is just a safe default.
     id: 'methods',
     kind: 'methods',
-    camera: { center: [1.352, 103.82], zoom: 10.5, duration: 1.6 },
+    camera: { center: [1.352, 103.82], zoom: 10, duration: 1.2 },
     layerConfig: null,
     legendHTML: '',
     copy: {
@@ -203,7 +194,7 @@ export const SECTIONS = [
   {
     id: 'outro',
     kind: 'outro',
-    camera: { center: [1.352, 103.82], zoom: 10.5, duration: 2.2 },
+    camera: { center: [1.352, 103.82], zoom: 10, duration: 1.6 },
     layerConfig: null,
     legendHTML: '',
     copy: {
