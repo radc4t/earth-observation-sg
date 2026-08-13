@@ -64,9 +64,10 @@ The look is a deliberate editorial identity, not a default map UI:
 
 - **Type.** Three self‑hosted faces (all SIL OFL): **Source Serif 4** (display), **Inter** (body/UI),
   **IBM Plex Mono** (data & coordinates). Bundled as hashed `woff2` — no webfont CDN.
-- **Design tokens.** One semantic token system (`--paper --panel --ink --accent …` + spacing/radius
-  - a small **motion vocabulary**), defined once and themed for **light (primary) and dark**
-    (`prefers-color-scheme` + a manual toggle that persists and wins over the OS).
+- **Design tokens.** One semantic token system — colour (`--paper`, `--panel`, `--ink`, `--accent`),
+  spacing and radius scales, and a small **motion vocabulary** — defined once and themed for
+  **light (primary) and dark** (`prefers-color-scheme`, with a manual toggle that persists and wins
+  over the OS).
 - **Solid, legible panels.** Editorial story cards with a coordinate stamp, date, and a snapshot note;
   a legend with a colour ramp, ticks and a calm provenance line; a click‑to‑read **inspector** with a
   crosshair reticle. No translucent "glass".
