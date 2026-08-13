@@ -82,6 +82,9 @@ function vesselSwatches() {
 export const SECTIONS = [
   {
     id: 'hero',
+    // Short label for the chapter-nav rail (js/nav.js). Kept here so the story config stays the
+    // single source for per-section copy — the rail can't drift from the sections it represents.
+    nav: 'Intro',
     kind: 'hero',
     camera: { center: [1.352, 103.82], zoom: 11, duration: 1.8 },
     layerConfig: null,
@@ -95,6 +98,7 @@ export const SECTIONS = [
   },
   {
     id: 'vegetation',
+    nav: 'Vegetation',
     kind: 'section',
     // Vegetation and heat share one camera (whole-island framing) so scrolling between
     // them cross-fades the NDVI and temperature layers in place — no zoom/pan jump.
@@ -123,6 +127,7 @@ export const SECTIONS = [
   },
   {
     id: 'heat',
+    nav: 'Heat',
     kind: 'section',
     // Same camera as vegetation (see note there) — the layers swap without moving the map, so
     // this duration is INERT (no fly happens on Veg→Heat); it only matters if arriving from
@@ -152,6 +157,7 @@ export const SECTIONS = [
   },
   {
     id: 'maritime',
+    nav: 'Maritime',
     kind: 'section',
     // Same longitude as heat, so the move to the Strait is a smooth vertical glide south. The
     // maritime layer travels in with this camera (mounted before the fly), so the duration sets
@@ -183,6 +189,7 @@ export const SECTIONS = [
     // Methods-specific layer lifecycle. A camera is still required (scheduleFly reads it); the
     // fly happens under the wash, so this whole-island framing is just a safe default.
     id: 'methods',
+    nav: 'Methods',
     kind: 'methods',
     camera: { center: [1.352, 103.82], zoom: 10, duration: 1.2 },
     layerConfig: null,
@@ -193,6 +200,7 @@ export const SECTIONS = [
   },
   {
     id: 'outro',
+    nav: 'Summary',
     kind: 'outro',
     camera: { center: [1.352, 103.82], zoom: 10, duration: 1.6 },
     layerConfig: null,
