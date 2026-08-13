@@ -5,6 +5,7 @@
 import { createMap, registerBasemapToggle, registerOverlays, onLayerError } from './map.js';
 import { SECTIONS } from './config.js';
 import { initScrolly } from './scrolly.js';
+import { initNav } from './nav.js';
 import { methodsHTML, statHTML } from './metadata.js';
 import { initInspect } from './inspect.js';
 import { registerThemeToggle } from './theme.js';
@@ -62,6 +63,10 @@ if (location.hash) {
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   story.jumpTo(location.hash.slice(1));
 }
+
+// Chapter-nav rail + scroll-progress bar. Initialised AFTER the load-time deep-link above so the
+// rail's URL-hash sync can never clobber location.hash before jumpTo has consumed it.
+initNav(SECTIONS);
 
 // Icons for the static-HTML controls (decorative Lucide glyphs; the control's text / aria-label
 // carries the accessible name). Injected once at init — a failed lookup degrades to text.

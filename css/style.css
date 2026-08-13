@@ -382,6 +382,128 @@ body.methods-active #map-wash {
   }
 }
 
+/* ---- chapter navigation rail (right edge, vertically centred) ----
+   Orientation, not a GIS toolbar: a quiet column of dots that says which chapter you're in and
+   lets you jump. Placed between the top-right legend and bottom-right zoom control. The container
+   passes pointer events through its gaps (like .story) so the map stays draggable; only the dots
+   themselves are interactive. Dots injected by js/nav.js from the SECTIONS config. */
+.chapter-nav {
+  position: fixed;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  pointer-events: none; /* gaps let map drags through; dots re-enable below */
+}
+.chapter-nav-dot {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  padding: 5px 4px;
+  cursor: pointer;
+  color: var(--muted);
+}
+.chapter-nav-dot:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: var(--r-1);
+}
+/* The dot itself: a small ring that fills with the accent when its chapter is active. */
+.chapter-nav-mark {
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1.5px solid var(--border-2);
+  box-shadow: var(--shadow);
+  transition:
+    transform var(--dur-micro) var(--ease-standard),
+    background-color var(--dur-micro) ease,
+    border-color var(--dur-micro) ease;
+}
+.chapter-nav-dot:hover .chapter-nav-mark {
+  border-color: var(--accent);
+}
+.chapter-nav-dot.is-active .chapter-nav-mark {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.18);
+}
+/* Chapter name — a mono field-report label in a solid pill so it reads over any basemap. Hidden
+   until the dot is hovered, focused, or active, so the resting rail stays minimal. */
+.chapter-nav-label {
+  font: 500 10.5px/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--muted);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 9px;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transform: translateX(4px);
+  pointer-events: none;
+  transition:
+    opacity var(--dur-micro) var(--ease-standard),
+    transform var(--dur-micro) var(--ease-standard);
+}
+.chapter-nav-dot:hover .chapter-nav-label,
+.chapter-nav-dot:focus-visible .chapter-nav-label,
+.chapter-nav-dot.is-active .chapter-nav-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+.chapter-nav-dot.is-active .chapter-nav-label {
+  color: var(--ink);
+  border-color: var(--accent);
+}
+/* On mobile the bottom sheet owns the screen — drop the rail, but keep the progress bar. */
+@media (max-width: 760px) {
+  .chapter-nav {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chapter-nav-mark,
+  .chapter-nav-label {
+    transition: none;
+  }
+}
+
+/* ---- scroll-progress bar (overall "how far through the story") ----
+   A hairline at the very top; the fill is scaled on the X axis by js/nav.js. Decorative
+   (aria-hidden) — the rail carries the accessible chapter position. */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 7;
+  pointer-events: none;
+  background: transparent;
+}
+.scroll-progress > span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  background: var(--accent);
+  will-change: transform;
+}
+
 /* ---- icons (inline Lucide; decorative, currentColor so they're theme- & forced-colors-safe) ---- */
 .icon {
   display: inline-block;
@@ -687,6 +809,11 @@ details.about[open] > summary .icon {
   border-radius: var(--radius);
   padding: 26px 26px 24px;
   box-shadow: var(--shadow);
+  /* Never let a tall card (e.g. Maritime on a short viewport) clip above the fold: cap it to the
+     step's padded height and scroll internally if content exceeds it. 16vh = the step's 8vh
+     top+bottom padding, so a full-height card fits exactly. Mobile + print override this below. */
+  max-height: calc(100dvh - 16vh);
+  overflow-y: auto;
   transform: translateY(14px);
   opacity: 0;
   transition:
@@ -1302,6 +1429,8 @@ details.about[open] > summary .icon {
   #map-wash,
   .basemap-toggle,
   .theme-toggle,
+  .chapter-nav,
+  .scroll-progress,
   .legend-panel,
   .inspect-hint,
   #inspect-sheet,
@@ -1373,5 +1502,18 @@ details.about[open] > summary .icon {
   .basemap-btn[aria-pressed='true'] {
     outline: 2px solid Highlight;
     outline-offset: -2px;
+  }
+  /* chapter rail: keep the dots/labels visible, and mark the active chapter with the system
+     Highlight (aria-current already conveys it to assistive tech). */
+  .chapter-nav-mark,
+  .chapter-nav-label {
+    border: 1px solid CanvasText;
+  }
+  .chapter-nav-dot[aria-current='true'] .chapter-nav-mark {
+    background: Highlight;
+    border-color: Highlight;
+  }
+  .scroll-progress > span {
+    background: Highlight;
   }
 }
