@@ -235,6 +235,9 @@ export function initScrolly(map, sections, opts = {}) {
   // is currently visible" (drives the crosshair/hint affordance) — different concepts.
   const signalRasterVisible = opts.onRasterVisible || (() => {});
 
+  const signalCompareEnter = opts.onCompareEnter || (() => {});
+  const signalCompareExit = opts.onCompareExit || (() => {});
+
   function activate(section) {
     if (!section || section.id === activeId) return;
     const prev = byId.get(activeId); // the section we're leaving — captured BEFORE reassigning
@@ -242,6 +245,12 @@ export function initScrolly(map, sections, opts = {}) {
     desired = section;
     map.closePopup(); // dismiss any inspect / vessel popup from the previous section
     setState({ section: section.id });
+
+    // Activating anything that ISN'T compare tears down the swipe divider + un-freezes the map
+    // BEFORE the new section reveals. Keyed off the destination (not `prev`) so it also fires when
+    // leaving compare via jumpTo/deep-link, which resets activeId so `prev` would be undefined.
+    // compare.exit() is idempotent (no-op unless compare is active), so calling it here is safe.
+    if (section.kind !== 'compare') signalCompareExit();
 
     // Legend morph applies exactly when the map does an in-place overlay cross-dissolve: the two
     // sections share a camera centre and both carry a legend (Vegetation <-> Heat — same place,
@@ -282,6 +291,9 @@ export function initScrolly(map, sections, opts = {}) {
     // overlays/legend/inspector are already off via the engine's null-layer state above. The
     // class flips off on every other section, so the wash never lingers.
     document.body.classList.toggle('methods-active', section.kind === 'methods');
+    // Compare = the two rasters split by a swipe divider over a frozen frame. Only chapter-specific
+    // behaviour; overlays/legend are otherwise handled by the engine (layerConfig is null).
+    document.body.classList.toggle('compare-active', section.kind === 'compare');
 
     // Legend timing. A section with no legend hides the panel now. A travels-with-camera layer
     // (maritime) also hides the OUTGOING legend now — the thermal legend must not linger over the
@@ -296,6 +308,10 @@ export function initScrolly(map, sections, opts = {}) {
     const revealEvidence = () => {
       overlayTimer = null;
       if (incoming && !travelsWithCamera) incoming.setVisible(map, true);
+      // Compare reveals BOTH overlays + the divider here (its own controller), in the same slot a
+      // single raster would develop in — after applyLayersImmediate's hideAllOverlays, so nothing
+      // races it hidden.
+      if (section.kind === 'compare') signalCompareEnter();
       if (hasLegend) updateLegend(section, { morph });
       signalRasterVisible(incoming && incoming.key ? incoming.key : null);
     };
