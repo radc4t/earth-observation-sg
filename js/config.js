@@ -29,7 +29,7 @@ function realNote(m, extra) {
   );
 }
 function illustrationNote(m) {
-  return `<p class="legend-note">${m.illustrationNote} · real source: ${m.realSource}</p>`;
+  return `<p class="legend-note">${m.illustrationNote}</p>`;
 }
 
 function rampSvg(stops, leftLabel, rightLabel, id) {
