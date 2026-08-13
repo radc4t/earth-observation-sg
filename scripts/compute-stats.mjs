@@ -20,8 +20,20 @@ const m = LAYER_META;
 const ndviImg = readPng('assets/overlays/ndvi_real.png');
 const thermalImg = readPng('assets/overlays/thermal_real.png');
 
-const green = greenHeartNDVI(ndviImg, BOUNDS, buildLut(RAMPS.viridis), m.ndvi.displayMin, m.ndvi.displayMax);
-const heat = heatGapC(thermalImg, BOUNDS, buildLut(RAMPS.inferno), m.thermal.tminC, m.thermal.tmaxC);
+const green = greenHeartNDVI(
+  ndviImg,
+  BOUNDS,
+  buildLut(RAMPS.viridis),
+  m.ndvi.displayMin,
+  m.ndvi.displayMax
+);
+const heat = heatGapC(
+  thermalImg,
+  BOUNDS,
+  buildLut(RAMPS.inferno),
+  m.thermal.tminC,
+  m.thermal.tmaxC
+);
 
 console.log('Vegetation — Central Catchment mean NDVI :', green.toFixed(3));
 console.log('Heat — Jurong/Tuas mean °C              :', heat.industrial.toFixed(1));
