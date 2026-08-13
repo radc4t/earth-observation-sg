@@ -5,7 +5,7 @@
 import { createMap, registerBasemapToggle, registerOverlays, onLayerError } from './map.js';
 import { SECTIONS } from './config.js';
 import { initScrolly } from './scrolly.js';
-import { methodsHTML } from './metadata.js';
+import { methodsHTML, statHTML } from './metadata.js';
 import { initInspect } from './inspect.js';
 import { registerThemeToggle } from './theme.js';
 import { initMobile } from './mobile.js';
@@ -16,6 +16,11 @@ import { icon } from './icons.js';
 
 // Populate the Methods chapter's per-layer provenance rows from the single metadata source.
 document.getElementById('methods-body').innerHTML = methodsHTML();
+
+// Fill each chapter's headline-stat placeholder with its derived figure (js/metadata.js → statHTML).
+document.querySelectorAll('[data-stat]').forEach((el) => {
+  el.innerHTML = statHTML(el.dataset.stat);
+});
 
 const map = createMap('map');
 const modules = [
