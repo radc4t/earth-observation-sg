@@ -66,11 +66,11 @@ export function methodsHTML() {
   const rows = order
     .map((k) => {
       const m = LAYER_META[k];
-      // Real-vs-illustration is carried by the spec line itself ("Simulated tracks · real source:
-      // …" vs "<source> · <date> · <resolution> source") — no separate badge needed.
+      // The spec line describes each layer plainly — a real layer names its source/date/resolution;
+      // the illustrative one says "Simulated tracks" up front. No "real vs illustration" labelling.
       const spec = m.real
         ? `${m.source} · ${m.date} · ${m.sourceResolution} source`
-        : `Simulated tracks · real source: ${m.realSource}`;
+        : `Simulated tracks · from ${m.realSource}`;
       const note = m.real ? m.methodNote : m.illustrationNote;
       return (
         `<div class="method-row">` +
