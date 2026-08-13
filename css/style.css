@@ -283,18 +283,23 @@ body.methods-active #map-wash {
   /* The NDVI/thermal cross-fade lives here (not inline in JS) so prefers-reduced-motion can turn
      it off. Leaflet's setOpacity changes inline opacity; this transition animates that change. */
   transition: opacity var(--dur-panel) var(--ease-ground);
-  /* Feather the four edges so the raster dissolves into the map instead of ending in a hard
-     rectangle over the sea / Johor. Two axis gradients composited to an inset alpha falloff.
-     Presentation only — sampling reads the source PNG (js/sample.js), not the mask. If the
-     composited mask ever proves unreliable, the reduced opacity above already softens the edge. */
-  -webkit-mask-image:
-    linear-gradient(to right, transparent, #000 3%, #000 97%, transparent),
-    linear-gradient(to bottom, transparent, #000 3%, #000 97%, transparent);
-  -webkit-mask-composite: source-in; /* legacy WebKit keyword for "intersect" */
-  mask-image:
-    linear-gradient(to right, transparent, #000 3%, #000 97%, transparent),
-    linear-gradient(to bottom, transparent, #000 3%, #000 97%, transparent);
-  mask-composite: intersect;
+}
+/* Feather the four edges so the raster dissolves into the map instead of ending in a hard rectangle
+   over the sea / Johor. Two axis gradients composited to an inset alpha falloff. Guarded behind
+   @supports so a browser that can't composite masks (older Safari) simply SKIPS the mask and shows
+   the plain 0.7-opacity overlay (a slightly harder edge) rather than risking a blanked layer.
+   Presentation only — sampling reads the source PNG (js/sample.js), not the mask. */
+@supports ((mask-composite: intersect) or (-webkit-mask-composite: source-in)) {
+  .data-overlay {
+    -webkit-mask-image:
+      linear-gradient(to right, transparent, #000 3%, #000 97%, transparent),
+      linear-gradient(to bottom, transparent, #000 3%, #000 97%, transparent);
+    -webkit-mask-composite: source-in; /* legacy WebKit keyword for "intersect" */
+    mask-image:
+      linear-gradient(to right, transparent, #000 3%, #000 97%, transparent),
+      linear-gradient(to bottom, transparent, #000 3%, #000 97%, transparent);
+    mask-composite: intersect;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .data-overlay {
