@@ -27,6 +27,14 @@ export const LAYER_META = {
     // build_real_ndvi.py so click-to-inspect reports the right value.
     displayMin: 0.05,
     displayMax: 0.85,
+    // Headline stat — DERIVED, not authored: mean NDVI over the Central Catchment forest, computed
+    // from the shipped overlay by `npm run stats` (js/stats.js) and guarded by test/stats.test.js.
+    // Re-run and update if the overlay is regenerated.
+    headline: {
+      value: '0.83',
+      unit: 'NDVI',
+      label: 'the Central Catchment forest, from space — dense, healthy canopy',
+    },
   },
   thermal: {
     real: true,
@@ -43,6 +51,15 @@ export const LAYER_META = {
     processing: ['ST_B10 → °C', 'cloud, shadow & water masked (QA_PIXEL + QA_RADSAT)'],
     methodNote: 'Thermal band converted to °C; cloud, shadow & water masked.',
     rampEnds: ['Cooler', 'Hotter'],
+    // Headline stat — DERIVED, not authored: how much hotter the industrial west (Jurong/Tuas) runs
+    // than the forested centre, computed from the shipped overlay by `npm run stats` (js/stats.js)
+    // and guarded by test/stats.test.js. `approx` renders it as "≈9 °C".
+    headline: {
+      value: '9',
+      unit: '°C',
+      approx: true,
+      label: 'hotter in industrial Jurong & Tuas than the forested centre',
+    },
   },
   maritime: {
     real: false,
@@ -54,6 +71,17 @@ export const LAYER_META = {
     realSource: 'AIS transponder data',
   },
 };
+
+// Build a chapter's headline-stat markup from LAYER_META[key].headline (a big derived figure + a
+// caption). Single source shared with the cards (app.js fills the [data-stat] placeholders) so the
+// on-card number, the compute script and the honesty test can't drift. Returns '' if none.
+export function statHTML(key) {
+  const h = LAYER_META[key] && LAYER_META[key].headline;
+  if (!h) return '';
+  const value = (h.approx ? '≈' : '') + h.value;
+  const unit = h.unit ? `<span class="stat-unit">${h.unit}</span>` : '';
+  return `<span class="stat-value">${value}${unit}</span><span class="stat-label">${h.label}</span>`;
+}
 
 // Build the Methods-chapter per-layer rows straight from LAYER_META, so the visible provenance
 // (source, date, resolution, real-vs-illustrative) has a SINGLE source of truth shared with the

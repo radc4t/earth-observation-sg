@@ -911,6 +911,38 @@ details.about[open] > summary .icon {
   border-radius: 2px;
   flex: 0 0 auto;
 }
+/* Headline figure — a derived pull-stat between the date chip and the body: a large display value
+   with a small unit, over a muted caption. Content injected by app.js from js/metadata.js. */
+.card .stat {
+  margin: 2px 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.card .stat:empty {
+  display: none; /* no layout gap if a chapter has no headline (e.g. before injection) */
+}
+.stat-value {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 30px;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.stat-value .stat-unit {
+  margin-left: 6px;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+.stat-label {
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.4;
+}
 .about-body .snapshot-note {
   color: var(--muted);
   font-size: 13px;
