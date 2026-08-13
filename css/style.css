@@ -781,6 +781,18 @@ details.about[open] > summary .icon {
 }
 
 /* ---- story / step cards ---- */
+/* Scroll-snap: settle a wheel-flick on a composed chapter instead of mid-transition. Gentle
+   (proximity) so deliberate reading and map exploration are never hijacked. The document is the
+   scroll container; each 100vh step snaps its top to the viewport top — the same frame the observer
+   activates and nav-clicks / deep-links already target. Turned off on mobile + reduced motion. */
+html {
+  scroll-snap-type: y proximity;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-snap-type: none; /* a snap reposition is a sudden viewport shift — honour the opt-out */
+  }
+}
 .story {
   position: relative;
   z-index: 2;
@@ -792,6 +804,7 @@ details.about[open] > summary .icon {
   align-items: center;
   justify-content: flex-start;
   padding: 8vh 6vw;
+  scroll-snap-align: start;
 }
 .step--hero {
   align-items: center;
@@ -1195,6 +1208,11 @@ details.about[open] > summary .icon {
 @media (max-width: 760px) {
   :root {
     --card-w: 100%;
+  }
+  /* No scroll-snap on mobile: steps are transparent scroll-drivers behind a fixed bottom sheet
+     with its own drag/inspect touch model (mobile.js, inspect.js) — snapping would fight it. */
+  html {
+    scroll-snap-type: none;
   }
   /* steps are now transparent scroll-triggers; the card is positioned by fixed, below */
   .step {
