@@ -74,6 +74,15 @@ let visible = false;
 // and "fly off". We pause position updates while the map is moving/zooming.
 let mapMoving = false;
 
+// Vessel dot sizing: a small resting radius that grows a touch on hover as an affordance.
+const BASE_R = 4;
+const HOVER_R = 6;
+// A dedicated canvas renderer for the vessel dots, lazily created in add() once the map exists.
+// Its `tolerance` widens the clickable area around each dot so a tap NEAR a moving vessel — not
+// dead-centre on the ~8px circle — still registers. The default SVG renderer has no such tolerance,
+// which is what made the drifting dots so hard to hit. Lane lines stay on the default renderer.
+let vesselRenderer = null;
+
 // ---- geometry helpers -----------------------------------------------------
 function haversine(a, b) {
   const R = 6371000;
@@ -114,40 +123,63 @@ function randType() {
   return bag[Math.floor(Math.random() * bag.length)];
 }
 
+// Create one vessel dot for `record` and register it. Shared by the simulated builder and the
+// real-AIS swap so both get the same tolerant hit area + hover-to-pause affordance. `record`
+// carries { laneIndex, t, speedTps, dir, type, id, knots }; `note` is an optional extra popup line
+// (the illustrative caveat for the simulated placeholder). Sets record.marker and record.paused.
+function addVessel(map, record, note) {
+  record.paused = false;
+  const p = pointAt(laneMeta[record.laneIndex], record.t);
+  const marker = L.circleMarker([p.lat, p.lng], {
+    renderer: vesselRenderer, // canvas + click tolerance, so a near-miss on a moving dot still hits
+    radius: BASE_R,
+    color: '#0b1622',
+    weight: 1,
+    fillColor: VESSEL_TYPES[record.type] || '#38bdf8',
+    fillOpacity: 0.95,
+    bubblingMouseEvents: false, // a vessel click opens its own popup, not the inspect tool
+  });
+  marker.bindPopup(
+    `<div class="vessel-pop"><strong>${record.type}</strong> · ${record.id}<br>${record.knots} kn` +
+      (note ? `<br><span class="pop-note">${note}</span>` : '') +
+      '</div>'
+  );
+  // Hover turns a moving dot into a still, obviously-clickable target: freeze this vessel's drift,
+  // grow it slightly and show a pointer. mouseout restores drift, size and cursor.
+  marker.on('mouseover', () => {
+    record.paused = true;
+    marker.setRadius(HOVER_R);
+    map.getContainer().style.cursor = 'pointer';
+  });
+  marker.on('mouseout', () => {
+    record.paused = false;
+    marker.setRadius(BASE_R);
+    map.getContainer().style.cursor = '';
+  });
+  marker.addTo(vesselGroup);
+  record.marker = marker;
+  vessels.push(record);
+}
+
 function buildVessels(map, count) {
   vesselGroup.clearLayers();
   vessels = [];
   const n = count || 25;
   for (let i = 0; i < n; i++) {
     const laneIndex = i % laneMeta.length;
-    const dir = laneIndex % 2 === 0 ? -1 : 1;
-    const type = randType();
-    const p = pointAt(laneMeta[laneIndex], Math.random());
-    const knots = Math.round(8 + Math.random() * 12);
-    const id = `SG-${1000 + i}`;
-    const marker = L.circleMarker([p.lat, p.lng], {
-      radius: 4,
-      color: '#0b1622',
-      weight: 1,
-      fillColor: VESSEL_TYPES[type],
-      fillOpacity: 0.95,
-      bubblingMouseEvents: false, // a vessel click opens its own popup, not the inspect tool
-    });
-    marker.bindPopup(
-      `<div class="vessel-pop"><strong>${type}</strong> · ${id}<br>${knots} kn<br>` +
-        `<span class="pop-note">Simulated position (illustrative)</span></div>`
+    addVessel(
+      map,
+      {
+        laneIndex,
+        t: Math.random(),
+        speedTps: 0.006 + Math.random() * 0.012,
+        dir: laneIndex % 2 === 0 ? -1 : 1,
+        type: randType(),
+        id: `SG-${1000 + i}`,
+        knots: Math.round(8 + Math.random() * 12),
+      },
+      'Simulated position (illustrative)'
     );
-    marker.addTo(vesselGroup);
-    vessels.push({
-      marker,
-      laneIndex,
-      t: Math.random(),
-      speedTps: 0.006 + Math.random() * 0.012,
-      dir,
-      type,
-      id,
-      knots,
-    });
   }
 }
 
@@ -195,6 +227,12 @@ export const maritimeLayer = {
     laneMeta = LANE_SPINES.map(measureLane);
     laneGroup = L.layerGroup();
     drawLanes(laneGroup, LANE_SPINES);
+    // Canvas renderer with click tolerance for the vessel dots (see vesselRenderer note above).
+    // Give it its OWN pane above the overlayPane (where the lane polylines draw) so the dots sit
+    // on top of the lanes instead of being hidden under them.
+    map.createPane('vessels');
+    map.getPane('vessels').style.zIndex = '450'; // between overlayPane (400) and markerPane (600)
+    vesselRenderer = L.canvas({ pane: 'vessels', tolerance: 8, padding: 0.5 });
     vesselGroup = L.layerGroup();
     buildVessels(map, 25);
 
@@ -241,6 +279,7 @@ export const maritimeLayer = {
       const dt = Math.min((now - last) / 1000, 0.1);
       last = now;
       for (const v of vessels) {
+        if (v.paused) continue; // held still while hovered, so it's an easy click target
         v.t += v.dir * v.speedTps * dt;
         if (v.t > 1) v.t -= 1;
         if (v.t < 0) v.t += 1;
@@ -271,31 +310,14 @@ export const maritimeLayer = {
     vesselGroup.clearLayers();
     vessels = [];
     lines.forEach((f, i) => {
-      const type = (f.properties && f.properties.vesselType) || 'Container';
-      const id = (f.properties && f.properties.id) || `AIS-${i}`;
-      const knots = (f.properties && f.properties.knots) || 12;
-      const p = pointAt(laneMeta[i], Math.random());
-      const marker = L.circleMarker([p.lat, p.lng], {
-        radius: 4,
-        color: '#0b1622',
-        weight: 1,
-        fillColor: VESSEL_TYPES[type] || '#38bdf8',
-        fillOpacity: 0.95,
-        bubblingMouseEvents: false,
-      });
-      marker.bindPopup(
-        `<div class="vessel-pop"><strong>${type}</strong> · ${id}<br>${knots} kn</div>`
-      );
-      marker.addTo(vesselGroup);
-      vessels.push({
-        marker,
+      addVessel(map, {
         laneIndex: i,
         t: Math.random(),
         speedTps: 0.006 + Math.random() * 0.012,
         dir: 1,
-        type,
-        id,
-        knots,
+        type: (f.properties && f.properties.vesselType) || 'Container',
+        id: (f.properties && f.properties.id) || `AIS-${i}`,
+        knots: (f.properties && f.properties.knots) || 12,
       });
     });
     if (visible) this.start(map);
