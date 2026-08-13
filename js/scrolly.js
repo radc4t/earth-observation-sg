@@ -366,6 +366,11 @@ export function initScrolly(map, sections, opts = {}) {
     isFlying = false;
     map.setView(s.camera.center, s.camera.zoom, { animate: false });
     activate(s);
+    // Bring the section's card into view so a #deep-link lands on the right chapter — not the hero
+    // card at scroll-top. Instant (a navigation, not an animation); the observer re-firing activate()
+    // for the same id is a no-op.
+    const stepEl = document.querySelector(`.step[data-id="${id}"]`);
+    if (stepEl) stepEl.scrollIntoView({ block: 'start', behavior: 'instant' });
   }
 
   return { activate, jumpTo };

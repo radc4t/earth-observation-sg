@@ -50,7 +50,13 @@ paintStampSwatch('heat', RAMPS.inferno);
 // Expose for deep-linking (#section in URL) and debugging.
 window.__map = map;
 window.__story = story;
-if (location.hash) story.jumpTo(location.hash.slice(1));
+if (location.hash) {
+  // A deep-link's scroll must win over the browser's automatic scroll restoration,
+  // which otherwise fires after load and clobbers jumpTo (a fresh visit works, but a
+  // reload / return-nav would land at the restored position, not the hash target).
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  story.jumpTo(location.hash.slice(1));
+}
 
 // Icons for the static-HTML controls (decorative Lucide glyphs; the control's text / aria-label
 // carries the accessible name). Injected once at init — a failed lookup degrades to text.
