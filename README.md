@@ -33,6 +33,10 @@ Four scroll chapters over one live map:
 Click (or press <kbd>Enter</kbd>) anywhere on an active data layer to read the **actual value** under
 that point — an NDVI reading and vegetation class, or the temperature in °C.
 
+![The Urban heat chapter: Landsat 9 land‑surface‑temperature overlay across Singapore — industrial Jurong and Tuas glowing hot on the inferno ramp while reservoirs and the forested centre stay cool and masked — beside the chapter’s field‑note card and a 33–48 °C legend](docs/chapter-heat.jpg)
+
+<sub>The **Urban heat** chapter — real Landsat 9 surface temperature (6 Jul 2025) over the live Sentinel‑2 basemap; water, cloud and shadow masked.</sub>
+
 ## Real vs. illustrative — read this first
 
 Honesty about what is real is a core value of the project. The interface says it plainly in each
@@ -117,11 +121,14 @@ npm run lint           # ESLint (vanilla ES modules)
 npm run format         # Prettier (js/css/html/md); `format:check` runs in CI
 npm run build          # esbuild → dist/ (bundle.js, style.min.css, index.html, assets/)
 npm run preview        # build, then serve dist/ locally
+npm test               # unit + scientific tests (node --test, zero framework)
 ruff check scripts/ && ruff format scripts/   # Python asset scripts (pip install ruff)
 ```
 
 - **CI** — [`ci.yml`](.github/workflows/ci.yml): on every push/PR, ESLint + Prettier check +
-  `npm run build` (JS) and Ruff check/format (Python).
+  `npm run build` + **`npm test`** (JS), and Ruff check/format + the `ramps.py` self-test (Python).
+  The test suite includes a **scientific check** that samples the real overlay PNGs at pinned
+  coordinates and asserts the documented NDVI / °C value bands — so a data or ramp regression fails CI.
 - **Deploy** — [`pages.yml`](.github/workflows/pages.yml): on push to `main`, builds `dist/` and
   publishes to **GitHub Pages** (live). _For a fresh fork this needs the one‑time repo setting
   Settings → Pages → Source → **GitHub Actions**._
@@ -172,6 +179,7 @@ js/
     maritime.js            animated vessels + rAF loop + replaceWithRealAIS()
 assets/fonts/              self-hosted woff2 (Source Serif 4, Inter, IBM Plex Mono — SIL OFL)
 assets/overlays/           ndvi_real.png + thermal_real.png (real); ndvi.png/thermal.png (placeholders)
+test/                      node --test suite: pure logic + real-PNG scientific + CSS↔JS motion sync
 scripts/build.mjs          esbuild production build → dist/
 scripts/generate-placeholders/
   ramps.py                 loads the colour ramps from js/ramps.js (single source)
