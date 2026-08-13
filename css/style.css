@@ -779,6 +779,108 @@ details.about[open] > summary .icon {
   display: inline-block;
   box-shadow: 0 0 0 1px var(--border-2);
 }
+/* Sub-heading above each ramp in the compare chapter's dual legend. */
+.legend-sub {
+  margin: 12px 0 2px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.legend-sub:first-of-type {
+  margin-top: 4px;
+}
+
+/* ---- compare (swipe) chapter ---- */
+/* The divider lives inside the map container: it sits above the overlay panes but, because #map is
+   z:0, below the story cards (z:2) and the legend/controls (z:6) — so it never covers chrome, and
+   its handle rests ~55% right, clear of the left card. Shown only while the compare chapter is
+   active; js/compare.js sets its `left` and clips the two overlays. */
+.compare-divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 55%;
+  width: 0;
+  z-index: 500;
+  display: none;
+  pointer-events: none; /* only the line + handle take events */
+}
+body.compare-active .compare-divider {
+  display: block;
+}
+.compare-divider-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: var(--panel);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+.compare-handle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--ink-2);
+  box-shadow: var(--shadow);
+  cursor: ew-resize;
+  pointer-events: auto;
+  touch-action: none; /* pointer-drag on touch without the page scrolling */
+}
+.compare-handle:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.compare-handle-grip {
+  display: flex;
+  gap: 7px;
+  font: 700 15px/1 var(--sans);
+}
+.compare-handle-grip::before {
+  content: '\2039'; /* ‹ */
+}
+.compare-handle-grip::after {
+  content: '\203A'; /* › */
+}
+/* Side tags naming each half, clear of the top chrome. Desktop only (mobile has less headroom). */
+.compare-tag {
+  position: absolute;
+  top: 72px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 9px;
+  box-shadow: var(--shadow);
+  white-space: nowrap;
+}
+.compare-tag--left {
+  right: calc(50% + 12px);
+}
+.compare-tag--right {
+  left: calc(50% + 12px);
+}
+@media (max-width: 760px) {
+  .compare-tag {
+    display: none;
+  }
+}
 
 /* ---- story / step cards ---- */
 /* Scroll-snap: settle a wheel-flick on a composed chapter instead of mid-transition. Gentle

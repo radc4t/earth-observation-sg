@@ -6,6 +6,7 @@ import { createMap, registerBasemapToggle, registerOverlays, onLayerError } from
 import { SECTIONS } from './config.js';
 import { initScrolly } from './scrolly.js';
 import { initNav } from './nav.js';
+import { initCompare } from './compare.js';
 import { methodsHTML, statHTML } from './metadata.js';
 import { initInspect } from './inspect.js';
 import { registerThemeToggle } from './theme.js';
@@ -34,12 +35,17 @@ registerThemeToggle(document.getElementById('theme-toggle'));
 // Click the map to read the NDVI / temperature value under the cursor. Created before the story
 // so the story can raise its "raster visible" signal to gate the inspect affordance.
 const inspect = initInspect(map, { ndvi: ndviLayer, thermal: thermalLayer });
+// The "two views, one island" swipe chapter — reveals both rasters split by a divider over a frozen
+// frame. Driven by the story engine's onCompareEnter/onCompareExit hooks below.
+const compare = initCompare(map, { ndviLayer, thermalLayer });
 // The hero step activates on load and flies from the wide intro framing (zoom 9)
 // down to the whole island (zoom 11) — a cinematic zoom-in. The overlay develops in on the
 // glide's tail and only then does the inspect affordance appear (onRasterVisible).
 const story = initScrolly(map, SECTIONS, {
   onLayerError,
   onRasterVisible: inspect.setRasterVisible,
+  onCompareEnter: compare.enter,
+  onCompareExit: compare.exit,
 });
 // Mobile bottom-sheet "Explore map" behaviour (no-op on desktop).
 initMobile(map);

@@ -175,6 +175,40 @@ export const SECTIONS = [
     },
   },
   {
+    // Compare = the payoff beat: NDVI and thermal over the SAME frozen frame, split by a swipe
+    // divider (js/compare.js), so the "two views of one place" correlation is shown, not asserted.
+    // layerConfig is null — the compare controller owns the two overlays; the engine just flips the
+    // `compare-active` class and calls onCompareEnter/Exit (see scrolly.js).
+    id: 'compare',
+    nav: 'Compare',
+    kind: 'compare',
+    // Same frame as vegetation/heat, so arriving from Heat is seamless (no fly) and the split sits
+    // over the identical island the two prior chapters showed.
+    camera: { center: [1.35, 103.8], zoom: 12, duration: 1.4 },
+    layerConfig: null,
+    legendHTML:
+      legendHead('Green vs. heat') +
+      '<p class="legend-sub">Vegetation index (NDVI)</p>' +
+      rampSvg(
+        VIRIDIS_STOPS,
+        M.ndvi.rampEnds[0],
+        M.ndvi.rampEnds[1],
+        'cmp-ndvi',
+        ndviTicks(M.ndvi.displayMin, M.ndvi.displayMax)
+      ) +
+      '<p class="legend-sub">Land surface temperature</p>' +
+      valueRamp(INFERNO_STOPS, tempTicks(M.thermal.tminC, M.thermal.tmaxC), '°C', 'cmp-thermal') +
+      `<p class="legend-note">Different dates (NDVI ${M.ndvi.date} · heat ${M.thermal.date}) — a ` +
+      'pattern comparison, not a same-day one.</p>',
+    copy: {
+      title: 'Two views, one island',
+      body:
+        'Green cover and surface heat, over the exact same frame. Drag the divider: the forested ' +
+        'Central Catchment reads greenest — and coolest — while the built-up, industrial west is ' +
+        'both less green and markedly hotter. Two instruments, one pattern.',
+    },
+  },
+  {
     id: 'maritime',
     nav: 'Maritime',
     kind: 'section',
