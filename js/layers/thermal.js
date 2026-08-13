@@ -13,7 +13,7 @@ import { RAMPS } from '../ramps.js';
 import { LAYER_META } from '../metadata.js';
 
 // Bounds MUST match BBOX in generate_overlays.py. Order: [[south, west], [north, east]]
-const BOUNDS = [
+export const BOUNDS = [
   [1.205, 103.6],
   [1.475, 104.04],
 ];

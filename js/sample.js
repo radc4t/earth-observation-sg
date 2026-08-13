@@ -47,24 +47,24 @@ function pixels(imgEl) {
   return c;
 }
 
-// bounds: Leaflet [[south, west], [north, east]]. Returns { norm } | { masked:true } | null.
-export function sampleImageNorm(imgEl, bounds, latlng, lut) {
-  if (!imgEl || !imgEl.naturalWidth) return null;
-  const [[s, w], [n, e]] = bounds;
+// Map a lat/lng to an integer pixel (px,py) in a w×h image over Leaflet bounds
+// [[south, west], [north, east]]. Returns null when the point is outside the bounds. Pure — the
+// extracted geometry of the sampler, so it can be unit-tested without a canvas.
+export function latLngToPixel(bounds, latlng, w, h) {
+  const [[s, west], [n, east]] = bounds;
   const { lat, lng } = latlng;
-  if (lng < w || lng > e || lat < s || lat > n) return { masked: true }; // outside overlay
-  const c = pixels(imgEl);
-  const px = Math.min(c.w - 1, Math.max(0, Math.floor(((lng - w) / (e - w)) * c.w)));
-  const py = Math.min(c.h - 1, Math.max(0, Math.floor(((n - lat) / (n - s)) * c.h)));
-  const i = (py * c.w + px) * 4;
-  const r = c.data[i];
-  const g = c.data[i + 1];
-  const b = c.data[i + 2];
-  const alpha = c.data[i + 3];
-  if (alpha < 8) return { masked: true }; // cloud / water / edge — no reading here
+  if (lng < west || lng > east || lat < s || lat > n) return null;
+  const px = Math.min(w - 1, Math.max(0, Math.floor(((lng - west) / (east - west)) * w)));
+  const py = Math.min(h - 1, Math.max(0, Math.floor(((n - lat) / (n - s)) * h)));
+  return { px, py };
+}
+
+// Reverse-lookup: the LUT index whose [r,g,b] is nearest the sampled pixel (squared distance) — the
+// inverse of the colourising step that produced the PNG. Pure — the extracted core of the inspector.
+export function lutIndexForRgb(r, g, b, lut) {
   let best = 0;
   let bestDist = Infinity;
-  for (let k = 0; k < 256; k++) {
+  for (let k = 0; k < lut.length; k++) {
     const dr = r - lut[k][0];
     const dg = g - lut[k][1];
     const db = b - lut[k][2];
@@ -74,5 +74,20 @@ export function sampleImageNorm(imgEl, bounds, latlng, lut) {
       best = k;
     }
   }
-  return { norm: best / 255 };
+  return best;
+}
+
+// bounds: Leaflet [[south, west], [north, east]]. Returns { norm } | { masked:true } | null.
+export function sampleImageNorm(imgEl, bounds, latlng, lut) {
+  if (!imgEl || !imgEl.naturalWidth) return null;
+  const p = latLngToPixel(bounds, latlng, imgEl.naturalWidth, imgEl.naturalHeight);
+  if (!p) return { masked: true }; // outside overlay (no need to rasterise the canvas)
+  const c = pixels(imgEl);
+  const i = (p.py * c.w + p.px) * 4;
+  const r = c.data[i];
+  const g = c.data[i + 1];
+  const b = c.data[i + 2];
+  const alpha = c.data[i + 3];
+  if (alpha < 8) return { masked: true }; // cloud / water / edge — no reading here
+  return { norm: lutIndexForRgb(r, g, b, lut) / 255 };
 }
