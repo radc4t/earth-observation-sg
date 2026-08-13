@@ -13,19 +13,23 @@ const M = LAYER_META;
 const VIRIDIS_STOPS = RAMPS.viridis;
 const INFERNO_STOPS = RAMPS.inferno;
 
-// Legend note for a REAL layer, and a prominent badge + note for an illustrative one —
-// all derived from js/metadata.js so wording can't drift from the About panel.
+// Legend header: just the layer title. The at-a-glance REAL / ILLUSTRATION classification lives in
+// the Methods chapter now — in the always-on legend it read as defensive clutter, and the
+// provenance note below already answers "real or illustrative, and from where?" calmly.
+function legendHead(title) {
+  return `<div class="legend-head"><h3>${title}</h3></div>`;
+}
+
+// Provenance note for a REAL layer, and the context note for an illustrative one — all
+// derived from js/metadata.js so wording can't drift from the About panel.
 function realNote(m, extra) {
   return (
     `<p class="legend-note">Real: ${m.source} · ${m.date} · ${m.sourceResolution} source, ` +
     `${m.displayResolution} display grid${extra ? ' · ' + extra : ''}</p>`
   );
 }
-function illustrationTag(m) {
-  return `<p class="legend-badge">${m.badge}</p>`;
-}
 function illustrationNote(m) {
-  return `<p class="legend-note">${m.illustrationNote} · real source: ${m.realSource}</p>`;
+  return `<p class="legend-note">${m.illustrationNote}</p>`;
 }
 
 function rampSvg(stops, leftLabel, rightLabel, id) {
@@ -79,7 +83,7 @@ export const SECTIONS = [
   {
     id: 'hero',
     kind: 'hero',
-    camera: { center: [1.352, 103.82], zoom: 11, duration: 2.4 },
+    camera: { center: [1.352, 103.82], zoom: 11, duration: 1.8 },
     layerConfig: null,
     legendHTML: '',
     copy: {
@@ -94,7 +98,7 @@ export const SECTIONS = [
     kind: 'section',
     // Vegetation and heat share one camera (whole-island framing) so scrolling between
     // them cross-fades the NDVI and temperature layers in place — no zoom/pan jump.
-    camera: { center: [1.35, 103.8], zoom: 12, duration: 2 },
+    camera: { center: [1.35, 103.8], zoom: 12, duration: 1.4 },
     layerConfig: {
       id: ndviLayer.id,
       sourceId: ndviLayer.sourceId,
@@ -102,7 +106,7 @@ export const SECTIONS = [
       visible: true,
     },
     legendHTML:
-      `<h3>${M.ndvi.title}</h3>` +
+      legendHead(M.ndvi.title) +
       rampSvg(VIRIDIS_STOPS, M.ndvi.rampEnds[0], M.ndvi.rampEnds[1], 'ndvi') +
       realNote(M.ndvi, 'clouds &amp; water masked'),
     copy: {
@@ -120,8 +124,10 @@ export const SECTIONS = [
   {
     id: 'heat',
     kind: 'section',
-    // Same camera as vegetation (see note there) — the layers swap without moving the map.
-    camera: { center: [1.35, 103.8], zoom: 12, duration: 2 },
+    // Same camera as vegetation (see note there) — the layers swap without moving the map, so
+    // this duration is INERT (no fly happens on Veg→Heat); it only matters if arriving from
+    // elsewhere. Kept in step with vegetation.
+    camera: { center: [1.35, 103.8], zoom: 12, duration: 1.4 },
     layerConfig: {
       id: thermalLayer.id,
       sourceId: thermalLayer.sourceId,
@@ -129,7 +135,7 @@ export const SECTIONS = [
       visible: true,
     },
     legendHTML:
-      `<h3>${M.thermal.title}</h3>` +
+      legendHead(M.thermal.title) +
       valueRamp(INFERNO_STOPS, tempTicks(M.thermal.tminC, M.thermal.tmaxC), '°C', 'thermal') +
       realNote(M.thermal, 'clouds, shadow &amp; water masked'),
     copy: {
@@ -147,20 +153,17 @@ export const SECTIONS = [
   {
     id: 'maritime',
     kind: 'section',
-    // Same longitude as heat, so the move to the Strait is a smooth vertical glide south
-    // (a slightly longer duration eases the bigger jump down to the ships).
-    camera: { center: [1.205, 103.8], zoom: 11.5, duration: 2.6 },
+    // Same longitude as heat, so the move to the Strait is a smooth vertical glide south. The
+    // maritime layer travels in with this camera (mounted before the fly), so the duration sets
+    // how the trip to the Strait feels — tuned to read as travelling to a new observation site.
+    camera: { center: [1.205, 103.8], zoom: 11, duration: 1.8 },
     layerConfig: {
       id: maritimeLayer.id,
       sourceId: maritimeLayer.sourceId,
       module: maritimeLayer,
       visible: true,
     },
-    legendHTML:
-      `<h3>${M.maritime.title}</h3>` +
-      illustrationTag(M.maritime) +
-      vesselSwatches() +
-      illustrationNote(M.maritime),
+    legendHTML: legendHead(M.maritime.title) + vesselSwatches() + illustrationNote(M.maritime),
     copy: {
       title: 'One of the world’s busiest waterways',
       body:
@@ -174,9 +177,24 @@ export const SECTIONS = [
     },
   },
   {
+    // Methods = a quiet "field notes" beat after maritime: the map dims to a paper ground
+    // (scrolly's kind:'methods' branch) and the card explains what each layer is + how it was
+    // made. layerConfig:null means the existing engine hides overlays/legend/inspector — no
+    // Methods-specific layer lifecycle. A camera is still required (scheduleFly reads it); the
+    // fly happens under the wash, so this whole-island framing is just a safe default.
+    id: 'methods',
+    kind: 'methods',
+    camera: { center: [1.352, 103.82], zoom: 10, duration: 1.2 },
+    layerConfig: null,
+    legendHTML: '',
+    copy: {
+      title: 'How these pictures were made',
+    },
+  },
+  {
     id: 'outro',
     kind: 'outro',
-    camera: { center: [1.352, 103.82], zoom: 10.5, duration: 2.2 },
+    camera: { center: [1.352, 103.82], zoom: 10, duration: 1.6 },
     layerConfig: null,
     legendHTML: '',
     copy: {

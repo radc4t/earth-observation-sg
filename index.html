@@ -8,24 +8,61 @@
       name="description"
       content="A scrolling data story showing what Singapore looks like from Earth-observation satellites — green cover, urban heat, and maritime traffic — and why the data matters."
     />
+    <!-- Match the mobile browser chrome to the theme (meta can't use CSS vars, so literals). -->
+    <meta name="theme-color" content="#f3f5f4" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0e1518" media="(prefers-color-scheme: dark)" />
+    <!-- Apply a persisted theme choice before first paint so the page doesn't flash the
+         system theme first. Kept inline + tiny on purpose; js/theme.js owns the rest. -->
+    <script>
+      try {
+        var t = localStorage.getItem('eo-theme');
+        if (t) document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="css/style.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   </head>
   <body>
+    <!-- First focusable element: lets keyboard / AT users jump past the map to the story. -->
+    <a class="skip-link" href="#story">Skip to the story</a>
     <!-- Fixed map canvas behind the scrolling narrative -->
-    <div id="map" aria-label="Interactive satellite map of Singapore" role="region"></div>
+    <div
+      id="map"
+      aria-label="Interactive satellite map of Singapore"
+      role="region"
+      tabindex="0"
+      aria-describedby="inspect-help"
+    ></div>
+    <!-- Paper wash that dims the map to a calm ground during the Methods chapter -->
+    <div id="map-wash" aria-hidden="true"></div>
+    <p id="inspect-help" class="sr-only">
+      Click the map to read a value at that point, or press Enter to read the value at the map
+      centre. Press R to read again.
+    </p>
+    <!-- Concise reading announced to assistive tech on each sample -->
+    <div id="inspect-live" class="sr-only" aria-live="polite"></div>
+
+    <!-- "read a value" affordance — shown only on sections with an inspectable raster -->
+    <div id="inspect-hint" class="inspect-hint" aria-hidden="true">
+      <span class="rt" aria-hidden="true"></span>Click to read a value
+    </div>
+
+    <!-- Mobile inspector reading (bottom sheet). Desktop uses the anchored Leaflet popup;
+         inspect.js fills whichever is appropriate. Announcements stay on #inspect-live. -->
+    <div id="inspect-sheet" class="inspect-sheet" hidden>
+      <button class="inspect-sheet-close" type="button" aria-label="Close reading"></button>
+      <div class="inspect-sheet-body inspect-readout"></div>
+    </div>
 
     <!-- Basemap toggle -->
-    <div
-      id="basemap-toggle"
-      class="basemap-toggle"
-      role="group"
-      aria-label="Satellite basemap"
-    ></div>
+    <div id="basemap-toggle" class="basemap-toggle" role="group" aria-label="Map style"></div>
 
-    <!-- Legend (updates per section) -->
-    <aside id="legend-panel" class="legend-panel" aria-live="polite" hidden>
+    <!-- Light / dark theme toggle (sun/moon icon injected by theme.js) -->
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch theme"></button>
+
+    <!-- Legend (updates per section; visibility handled by the .is-shown class + a fade) -->
+    <aside id="legend-panel" class="legend-panel" aria-live="polite">
       <button
         id="legend-collapse"
         class="legend-collapse"
@@ -33,13 +70,13 @@
         aria-expanded="true"
         aria-controls="legend"
       >
-        Legend ▾
+        <span class="lc-label">Legend</span>
       </button>
       <div id="legend" class="legend"></div>
     </aside>
 
     <!-- Scrolling story -->
-    <main class="story">
+    <main class="story" id="story" tabindex="-1">
       <section class="step step--hero" data-id="hero">
         <div class="card card--hero">
           <p class="kicker">Earth Observation · Singapore</p>
@@ -57,9 +94,15 @@
 
       <section class="step" data-id="vegetation">
         <div class="card">
-          <p class="kicker">01 · Environmental monitoring</p>
+          <!-- coord mirrors config.js SECTIONS 'vegetation' camera.center [1.35, 103.8] -->
+          <p class="kicker">
+            <span class="kicker-label">01 · Vegetation</span>
+            <span class="coord">1.35°N 103.80°E</span>
+          </p>
           <h2>How green is Singapore, really?</h2>
-          <p class="datatag">Sentinel-2 · 28 Jul 2024</p>
+          <p class="datatag">
+            <span class="swatch" aria-hidden="true"></span>Sentinel-2 · 28 Jul 2024
+          </p>
           <p>
             Satellites measure how strongly the land reflects near-infrared light — healthy plants
             glow in it. Combined into a Vegetation Index (NDVI), it maps living green cover, from
@@ -79,14 +122,21 @@
               </dd>
             </div>
           </dl>
+          <p class="snap">Snapshot: 28 Jul 2024. Change needs a time series.</p>
         </div>
       </section>
 
       <section class="step" data-id="heat">
         <div class="card">
-          <p class="kicker">02 · Climate resilience</p>
+          <!-- coord mirrors config.js SECTIONS 'heat' camera.center [1.35, 103.8] -->
+          <p class="kicker">
+            <span class="kicker-label">02 · Urban heat</span>
+            <span class="coord">1.35°N 103.80°E</span>
+          </p>
           <h2>Where Singapore’s surface runs hottest</h2>
-          <p class="datatag">Landsat 9 · 6 Jul 2025</p>
+          <p class="datatag">
+            <span class="swatch" aria-hidden="true"></span>Landsat 9 · 6 Jul 2025
+          </p>
           <p>
             Landsat’s thermal sensor reads the temperature of the ground itself — the
             <em>surface</em>, which runs hotter than the air. In this single-date snapshot,
@@ -107,18 +157,22 @@
               </dd>
             </div>
           </dl>
+          <p class="snap">Snapshot: 6 Jul 2025. One-date pattern, not a one-day claim.</p>
         </div>
       </section>
 
       <section class="step" data-id="maritime">
         <div class="card">
-          <p class="kicker">03 · Maritime activity</p>
+          <!-- coord mirrors config.js SECTIONS 'maritime' camera.center [1.205, 103.8] -->
+          <p class="kicker">
+            <span class="kicker-label">03 · Maritime</span>
+            <span class="coord">1.21°N 103.80°E</span>
+          </p>
           <h2>One of the world’s busiest waterways</h2>
           <p>
-            Ships can broadcast their position over AIS, and satellites can listen from orbit. This
-            <strong>illustration</strong> shows how those tracks reveal the structure of traffic in
-            the Singapore Strait — tankers, container ships and bulk carriers threading past the
-            island. <em>Tap a vessel to inspect it.</em>
+            Ships can broadcast their position over AIS, and satellites can listen from orbit. These
+            tracks reveal the structure of traffic in the Singapore Strait — tankers, container
+            ships and bulk carriers threading past the island. <em>Tap a vessel to inspect it.</em>
           </p>
           <dl class="meta">
             <div>
@@ -133,6 +187,48 @@
               </dd>
             </div>
           </dl>
+          <p class="snap">Simulated vessel tracks, from AIS transponder data.</p>
+        </div>
+      </section>
+
+      <section class="step step--methods" data-id="methods">
+        <div class="card card--methods">
+          <p class="kicker"><span class="kicker-label">04 · Methods</span></p>
+          <h2>How these pictures were made</h2>
+          <p class="datatag">Field notes</p>
+          <p class="method-lede">
+            Three layers, three kinds of observation — each from public, free satellite data, shown
+            as honestly as we can.
+          </p>
+          <!-- Per-layer provenance rows are generated from js/metadata.js (single source). -->
+          <div id="methods-body"></div>
+
+          <details class="about">
+            <summary>Full provenance &amp; credits</summary>
+            <div class="about-body">
+              <p>
+                <strong>Basemaps:</strong>
+                <a href="https://s2maps.eu" target="_blank" rel="noopener"
+                  >EOX Sentinel-2 cloudless</a
+                >
+                (Copernicus Sentinel-2), with a neutral
+                <a href="https://www.esri.com" target="_blank" rel="noopener"
+                  >Esri light-grey reference basemap</a
+                >
+                as an alternative ground.
+              </p>
+              <p class="snapshot-note">
+                The layers are different acquisitions, not a same-day comparison. Surface
+                temperature is the heat radiating from the ground — hotter than the air temperature.
+                Full band-level processing and one-line data-swap instructions are in
+                <a href="docs/swap-instructions.md">docs/swap-instructions.md</a>.
+              </p>
+              <p class="credits">
+                Basemaps © EOX IT Services GmbH · © Esri, HERE, Garmin, © OpenStreetMap contributors
+                · Contains modified Copernicus Sentinel data. Map rendering by Leaflet.
+              </p>
+            </div>
+          </details>
         </div>
       </section>
 
@@ -146,34 +242,6 @@
             satellite data into understanding people can act on.
             <strong>Public agencies observe the Earth so the public can see it too.</strong>
           </p>
-
-          <details class="about">
-            <summary>About the data</summary>
-            <div class="about-body">
-              <p>
-                <strong>Real imagery:</strong> the satellite basemap is genuine, free, public data —
-                <a href="https://s2maps.eu" target="_blank" rel="noopener"
-                  >EOX Sentinel-2 cloudless</a
-                >
-                (Copernicus Sentinel-2) and
-                <a href="https://www.esri.com" target="_blank" rel="noopener">Esri World Imagery</a
-                >.
-              </p>
-              <!-- Per-layer provenance is generated from js/metadata.js (single source of truth). -->
-              <div id="about-data"></div>
-              <p class="snapshot-note">
-                Each layer is a single-date snapshot: <strong>NDVI 28 Jul 2024</strong> (Sentinel-2)
-                and <strong>surface temperature 6 Jul 2025</strong> (Landsat 9). They are different
-                acquisitions, not a same-day comparison. Surface temperature is the heat radiating
-                from the ground — hotter than the air temperature. See
-                <a href="docs/swap-instructions.md">docs/swap-instructions.md</a>.
-              </p>
-              <p class="credits">
-                Basemaps © EOX IT Services GmbH · © Esri, Maxar, Earthstar Geographics · Contains
-                modified Copernicus Sentinel data. Map rendering by Leaflet.
-              </p>
-            </div>
-          </details>
         </div>
       </section>
     </main>

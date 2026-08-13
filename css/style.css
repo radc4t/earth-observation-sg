@@ -1,13 +1,194 @@
+/* Self-hosted type (all SIL OFL 1.1). Separate woff2 files — esbuild's file loader
+   rewrites these URLs for the production build. font-display:swap renders text immediately. */
+@font-face {
+  font-family: 'Source Serif 4';
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/source-serif-4-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Source Serif 4';
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/source-serif-4-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/inter-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-weight: 600;
+  font-display: swap;
+  src: url('../assets/fonts/inter-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-weight: 500;
+  font-display: swap;
+  src: url('../assets/fonts/ibm-plex-mono-500.woff2') format('woff2');
+}
+
+/* ---- Field Report design tokens ----
+   Light is the primary palette (the canonical Field Report look); dark is a first-class
+   parity theme. Colour tokens split by theme below; type / spacing / radius / aliases are
+   theme-independent and live once in the base :root. Data ramps (viridis/inferno) live in
+   js/ramps.js and stay the only vivid colour.
+
+   Theme cascade:
+     :root                          → light (default: system light & no explicit choice)
+     @media (prefers-color-scheme: dark) :root:not([data-theme]) → dark (system dark, no choice)
+     :root[data-theme='dark']       → dark  (explicit user choice — wins over system)
+     :root[data-theme='light']      → light (explicit user choice — wins over system)
+   Attribute specificity (0,1,1) beats the media-query :root (0,0,1), so an explicit choice
+   always overrides the OS preference. js/theme.js sets data-theme only when the user has
+   chosen; otherwise it is left unset so the media query drives the theme. */
 :root {
-  --bg: #0b1622;
-  --ink: #eef4fb;
-  --ink-dim: #9fb2c6;
-  --glass: rgba(11, 22, 34, 0.82);
-  --glass-brd: rgba(125, 211, 252, 0.22);
-  --accent: #7dd3fc;
-  --card-w: 420px;
-  --radius: 14px;
+  /* light palette (primary) */
+  --paper: #f3f5f4;
+  --panel: #ffffff;
+  --panel-2: #eef1f0;
+  --ink: #14191b;
+  --ink-2: #3a464b;
+  --muted: #5d6a72;
+  --border: #d6dddb;
+  --border-2: #bec8c6;
+  --accent: #0e5a6b;
+  --accent-ink: #ffffff;
+  --accent-weak: rgba(14, 90, 107, 0.09);
+  --good: #2f8f5b;
+  --illustration: #b7791f;
+  --critical: #b23a3a;
+  --focus: #0e5a6b;
+  --shadow: 0 10px 34px rgba(20, 40, 45, 0.14);
+
+  /* type roles (theme-independent) */
+  --serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* spacing (4px base) + radius scales */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 48px;
+  --r-1: 6px;
+  --r-2: 8px;
+  --r-3: 12px;
+  --r-4: 16px;
+
+  /* layout tokens */
+  --card-w: 404px;
+  --radius: var(--r-4);
+
+  /* motion vocabulary — MIRRORS js/motion.js (MOTION.*). Keep the two in sync.
+     Theme-independent, so defined once here (not in the light/dark token blocks). */
+  --dur-micro: 120ms; /* Must match MOTION.durMicro in js/motion.js */
+  --dur-component: 260ms; /* Must match MOTION.durComponent in js/motion.js */
+  --dur-panel: 520ms; /* Must match MOTION.durPanel in js/motion.js */
+  --delay-narrative: 260ms; /* Must match MOTION.delayNarrative in js/motion.js */
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1); /* Must match MOTION.easeStandard */
+  --ease-ground: cubic-bezier(0.4, 0, 0.2, 1); /* Must match MOTION.easeGround */
+
   font-synthesis: none;
+  color-scheme: light dark; /* native scrollbars / form controls / Leaflet zoom match theme */
+}
+
+/* Dark palette. Applied when the system prefers dark AND the user hasn't chosen (media),
+   and whenever the user explicitly chooses dark. The two triggers carry identical tokens
+   so they can't drift. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --paper: #0e1518;
+    --panel: #141d21;
+    --panel-2: #1a252a;
+    --ink: #eaf1f0;
+    --ink-2: #b7c4c4;
+    --muted: #7e8e8e;
+    --border: #24312f;
+    --border-2: #33433f;
+    --accent: #4fb3c4;
+    --accent-ink: #05161a;
+    --accent-weak: rgba(79, 179, 196, 0.14);
+    --good: #55c08a;
+    --illustration: #e0a34a;
+    --critical: #e27a7a;
+    --focus: #4fb3c4;
+    --shadow: 0 12px 34px rgba(0, 0, 0, 0.5);
+  }
+}
+:root[data-theme='dark'] {
+  --paper: #0e1518;
+  --panel: #141d21;
+  --panel-2: #1a252a;
+  --ink: #eaf1f0;
+  --ink-2: #b7c4c4;
+  --muted: #7e8e8e;
+  --border: #24312f;
+  --border-2: #33433f;
+  --accent: #4fb3c4;
+  --accent-ink: #05161a;
+  --accent-weak: rgba(79, 179, 196, 0.14);
+  --good: #55c08a;
+  --illustration: #e0a34a;
+  --critical: #e27a7a;
+  --focus: #4fb3c4;
+  --shadow: 0 12px 34px rgba(0, 0, 0, 0.5);
+}
+/* Explicit light choice — redundant with the base :root, but present so an explicit
+   selection is self-documenting and robust to future changes in the dark selectors. */
+:root[data-theme='light'] {
+  --paper: #f3f5f4;
+  --panel: #ffffff;
+  --panel-2: #eef1f0;
+  --ink: #14191b;
+  --ink-2: #3a464b;
+  --muted: #5d6a72;
+  --border: #d6dddb;
+  --border-2: #bec8c6;
+  --accent: #0e5a6b;
+  --accent-ink: #ffffff;
+  --accent-weak: rgba(14, 90, 107, 0.09);
+  --good: #2f8f5b;
+  --illustration: #b7791f;
+  --critical: #b23a3a;
+  --focus: #0e5a6b;
+  --shadow: 0 10px 34px rgba(20, 40, 45, 0.14);
+}
+
+/* Ease the theme flip so light↔dark doesn't hard-cut. Only colour properties, and only on
+   panels that don't already run their own transition (.card extends its reveal transition
+   instead — see below). Disabled under reduced motion. */
+.legend-panel,
+.basemap-toggle,
+.basemap-btn,
+.theme-toggle,
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
+}
+html {
+  transition: background-color 0.3s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .legend-panel,
+  .basemap-toggle,
+  .basemap-btn,
+  .theme-toggle,
+  .leaflet-popup-content-wrapper,
+  .leaflet-popup-tip,
+  html {
+    transition: none;
+  }
 }
 
 * {
@@ -18,17 +199,9 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: var(--bg);
+  background: var(--paper);
   color: var(--ink);
-  font-family:
-    'Inter',
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
+  font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -38,16 +211,59 @@ body {
   position: fixed;
   inset: 0;
   z-index: 0;
-  background: var(--bg);
+  background: var(--paper);
 }
-/* Leaflet controls & attribution — dark theme */
+/* the map reads as "readable" only where there's an inspectable raster (set by inspect.js) */
+#map.is-inspectable {
+  cursor: crosshair;
+}
+#map:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+/* screen-reader-only utility (visually hidden, still announced) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Paper wash: dims the map to a calm ground during the Methods chapter. Sits above the map
+   (z:0) and below the story cards (z:2). Opacity is a tuned value — the map stays perceptible
+   but clearly subordinate, not a blank page. */
+#map-wash {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: var(--paper);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-panel) var(--ease-ground);
+}
+body.methods-active #map-wash {
+  opacity: 0.88;
+}
+@media (prefers-reduced-motion: reduce) {
+  #map-wash {
+    transition: none;
+  }
+}
+
+/* Leaflet controls & attribution — theme-aware (tokens adapt to light/dark). */
 .leaflet-container {
-  background: var(--bg);
+  background: var(--paper);
   font-family: inherit;
 }
 .leaflet-control-attribution {
-  background: rgba(11, 22, 34, 0.7) !important;
-  color: var(--ink-dim) !important;
+  background: color-mix(in srgb, var(--panel) 82%, transparent) !important;
+  color: var(--muted) !important;
   font-size: 10px;
   backdrop-filter: blur(4px);
 }
@@ -55,36 +271,56 @@ body {
   color: var(--accent) !important;
 }
 .leaflet-bar a {
-  background: var(--glass) !important;
+  background: var(--panel) !important;
   color: var(--ink) !important;
-  border-color: var(--glass-brd) !important;
+  border-color: var(--border) !important;
 }
 .leaflet-bar a:hover {
-  background: rgba(30, 48, 70, 0.95) !important;
+  background: var(--panel-2) !important;
 }
 .data-overlay {
   image-rendering: auto;
+  /* The NDVI/thermal cross-fade lives here (not inline in JS) so prefers-reduced-motion can turn
+     it off. Leaflet's setOpacity changes inline opacity; this transition animates that change. */
+  transition: opacity var(--dur-panel) var(--ease-ground);
+  /* Feather the four edges so the raster dissolves into the map instead of ending in a hard
+     rectangle over the sea / Johor. Two axis gradients composited to an inset alpha falloff.
+     Presentation only — sampling reads the source PNG (js/sample.js), not the mask. If the
+     composited mask ever proves unreliable, the reduced opacity above already softens the edge. */
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, #000 3%, #000 97%, transparent),
+    linear-gradient(to bottom, transparent, #000 3%, #000 97%, transparent);
+  -webkit-mask-composite: source-in; /* legacy WebKit keyword for "intersect" */
+  mask-image:
+    linear-gradient(to right, transparent, #000 3%, #000 97%, transparent),
+    linear-gradient(to bottom, transparent, #000 3%, #000 97%, transparent);
+  mask-composite: intersect;
+}
+@media (prefers-reduced-motion: reduce) {
+  .data-overlay {
+    transition: none;
+  }
 }
 
-/* ---- basemap toggle ---- */
+/* ---- basemap selector (a quiet Field Report control, not a GIS toolbar) ---- */
 .basemap-toggle {
   position: fixed;
   top: 16px;
   left: 16px;
   z-index: 6;
   display: flex;
-  gap: 6px;
-  padding: 5px;
-  background: var(--glass);
-  border: 1px solid var(--glass-brd);
+  gap: 3px;
+  padding: 4px;
+  background: var(--panel);
+  border: 1px solid var(--border);
   border-radius: 999px;
-  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow);
 }
 .basemap-btn {
   border: 0;
   background: transparent;
-  color: var(--ink-dim);
-  font: 500 12.5px/1 inherit;
+  color: var(--muted);
+  font: 500 12px/1 var(--sans);
   padding: 7px 12px;
   border-radius: 999px;
   cursor: pointer;
@@ -97,15 +333,166 @@ body {
 }
 .basemap-btn.is-active {
   background: var(--accent);
-  color: #06121e;
+  color: var(--accent-ink);
   font-weight: 600;
 }
 .basemap-btn:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
+/* ---- theme toggle ---- */
+/* Minimal round button, bottom-left — same token language as the basemap selector. */
+.theme-toggle {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 6;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+}
+.theme-toggle:hover {
+  color: var(--accent);
+}
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+@media (max-width: 760px) {
+  .theme-toggle {
+    left: auto;
+    right: 12px;
+    top: 12px;
+    bottom: auto;
+  }
+}
+
+/* ---- icons (inline Lucide; decorative, currentColor so they're theme- & forced-colors-safe) ---- */
+.icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  flex: none;
+}
+.theme-toggle .icon {
+  width: 18px;
+  height: 18px;
+}
+.inspect-sheet-close .icon {
+  width: 18px;
+  height: 18px;
+}
+/* legend collapse: label left, chevron right; chevron direction follows aria-expanded via CSS */
+.legend-collapse {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.legend-collapse .icon,
+.about summary .icon {
+  width: 14px;
+  height: 14px;
+  transition: transform var(--dur-micro) var(--ease-standard);
+}
+#legend-collapse[aria-expanded='false'] .icon {
+  transform: rotate(-90deg);
+}
+/* Methods disclosure: native <details>/<summary> kept; only the marker presentation changes */
+.about summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  list-style: none;
+}
+.about summary::-webkit-details-marker {
+  display: none;
+}
+details.about[open] > summary .icon {
+  transform: rotate(180deg);
+}
+/* external-link arrow: small, sits on the text baseline */
+.about-body a .icon {
+  width: 0.78em;
+  height: 0.78em;
+  vertical-align: baseline;
+  margin-left: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .legend-collapse .icon,
+  .about summary .icon {
+    transition: none;
+  }
+}
+
+/* ---- inspect affordance (the "read a value" hint) ---- */
+/* Quiet by design: it should say "this map is readable", not "this is a GIS instrument".
+   Bottom-centre so it clears the bottom-left theme toggle and bottom-right zoom control;
+   bounded to the viewport so it never overflows on narrow screens. */
+.inspect-hint {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 18px;
+  z-index: 6;
+  margin: 0 auto;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 14px 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  /* hidden until an inspectable raster is active (inspect.js toggles .is-shown) */
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition:
+    opacity var(--dur-component) var(--ease-standard),
+    transform var(--dur-component) var(--ease-standard);
+}
+.inspect-hint.is-shown {
+  opacity: 1;
+  transform: none;
+}
+/* crosshair reticle (Lucide, injected by app.js) — reads as "read at this point" */
+.inspect-hint .rt {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--accent);
+}
+.inspect-hint .rt .icon {
+  width: 14px;
+  height: 14px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .inspect-hint {
+    transition: none;
+  }
+}
+
 /* ---- legend ---- */
+/* The panel fades/rises in when a section has a legend (JS toggles .is-shown) instead of
+   snapping via [hidden]. Hidden state keeps it in the DOM (for the aria-live announcement)
+   but non-interactive. */
 .legend-panel {
   position: fixed;
   top: 16px;
@@ -113,11 +500,73 @@ body {
   z-index: 6;
   width: 250px;
   max-width: calc(100vw - 32px);
-  background: var(--glass);
-  border: 1px solid var(--glass-brd);
+  background: var(--panel);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   backdrop-filter: blur(8px);
   overflow: hidden;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition:
+    opacity var(--dur-component) var(--ease-standard),
+    transform var(--dur-component) var(--ease-standard),
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
+}
+.legend-panel.is-shown {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+/* content cross-fade when swapping between two sections' legends. 160ms is a deliberate
+   one-off "swap dip" (a quick content blink under the panel fade), not part of the shared
+   motion vocabulary — kept local on purpose. Paired with the 160ms swap timer in scrolly.js. */
+.legend {
+  transition: opacity 0.16s ease;
+}
+.legend.is-swapping {
+  opacity: 0;
+}
+/* Legend cross-fade morph (Vegetation <-> Heat): the outgoing legend is copied into a ghost that
+   fades out while the new #legend fades in, both over --dur-panel so the ramp dissolves in step
+   with the map's raster cross-dissolve. `.legend-ghost` after `.legend` wins the shared-specificity
+   transition; the panel's overflow:hidden clips it to the rounded corners. */
+.legend.is-morphing {
+  transition: opacity var(--dur-panel) var(--ease-ground);
+}
+.legend.is-morph-in {
+  opacity: 0;
+}
+.legend-ghost {
+  position: absolute;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity var(--dur-panel) var(--ease-ground);
+}
+.legend-ghost.is-out {
+  opacity: 0;
+}
+/* Only during a morph: also ease the panel height so it doesn't pop between the NDVI and thermal
+   legend heights (width stays fixed). Restates the panel's base transitions — CSS can't append to
+   `transition` — plus height. */
+.legend-panel.is-morphing {
+  transition:
+    height var(--dur-panel) var(--ease-ground),
+    opacity var(--dur-component) var(--ease-standard),
+    transform var(--dur-component) var(--ease-standard),
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .legend-panel,
+  .legend-panel.is-morphing,
+  .legend,
+  .legend-ghost {
+    transition: none;
+  }
 }
 .legend-collapse {
   width: 100%;
@@ -125,8 +574,11 @@ body {
   border: 0;
   background: transparent;
   color: var(--ink);
-  font: 600 12px/1 inherit;
-  letter-spacing: 0.04em;
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 12px 14px 8px;
   cursor: pointer;
@@ -134,9 +586,22 @@ body {
 .legend {
   padding: 0 14px 14px;
 }
+/* header row: title left, classification badge right */
+.legend-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 10px;
+}
+.legend-head h3 {
+  margin: 0;
+}
 .legend h3 {
   margin: 4px 0 10px;
-  font-size: 14px;
+  font-size: 14.5px;
+  font-family: var(--serif);
+  font-weight: 600;
 }
 .legend-ramp {
   margin: 8px 0 6px;
@@ -145,35 +610,26 @@ body {
 .legend-ticks {
   display: flex;
   justify-content: space-between;
-  color: var(--ink-dim);
+  color: var(--muted);
+  font-family: var(--mono);
   font-size: 11px;
   margin-top: 4px;
+  font-variant-numeric: tabular-nums;
 }
 .legend-ticks span {
   flex: 0 0 auto;
 }
 .legend-note {
-  color: var(--ink-dim);
-  font-size: 11px;
-  margin: 8px 0 0;
-  line-height: 1.4;
-}
-/* prominent "Illustration"/"Simulation" tag so a placeholder is never read as real data */
-.legend-badge {
-  display: inline-block;
-  margin: 0 0 8px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgba(251, 191, 36, 0.16);
-  color: #fbbf24;
-  border: 1px solid rgba(251, 191, 36, 0.4);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  margin: 9px 0 0;
+  padding-top: 9px;
+  border-top: 1px solid var(--border); /* provenance divider — mirrors the story-card meta rule */
+  line-height: 1.45;
 }
 .legend-unavailable {
-  color: #fca5a5;
+  color: var(--critical);
   font-size: 11.5px;
   margin: 8px 0 0;
 }
@@ -194,7 +650,7 @@ body {
   height: 11px;
   border-radius: 50%;
   display: inline-block;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 0 1px var(--border-2);
 }
 
 /* ---- story / step cards ---- */
@@ -221,17 +677,19 @@ body {
   pointer-events: auto;
   width: var(--card-w);
   max-width: 100%;
-  background: var(--glass);
-  border: 1px solid var(--glass-brd);
+  background: var(--panel);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 26px 26px 24px;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow);
   transform: translateY(14px);
   opacity: 0;
   transition:
-    opacity 0.5s ease,
-    transform 0.5s ease;
+    opacity var(--dur-panel) var(--ease-standard),
+    transform var(--dur-panel) var(--ease-standard),
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease;
 }
 .step.is-active .card {
   opacity: 1;
@@ -249,26 +707,48 @@ body {
 .kicker {
   margin: 0 0 10px;
   color: var(--accent);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
+  /* label on the left, coordinate stamp pushed to the right edge (field-report header).
+     Wraps gracefully: if the two ever don't fit, the coordinate drops to its own line,
+     still right-aligned — never a mid-word break in the label. */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+}
+.kicker .coord {
+  margin-left: auto;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+  text-transform: none;
+  font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
 }
 .card h1 {
   margin: 0 0 14px;
+  font-family: var(--serif);
+  font-weight: 600;
   font-size: clamp(30px, 5vw, 46px);
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+  line-height: 1.06;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
 }
 .card h2 {
   margin: 0 0 12px;
+  font-family: var(--serif);
+  font-weight: 600;
   font-size: clamp(23px, 3.4vw, 31px);
-  line-height: 1.1;
-  letter-spacing: -0.01em;
+  line-height: 1.12;
+  letter-spacing: -0.006em;
+  text-wrap: balance;
 }
 .card p {
   margin: 0 0 14px;
-  color: #dbe7f3;
+  color: var(--ink-2);
   font-size: 15.5px;
   line-height: 1.6;
 }
@@ -281,27 +761,47 @@ body {
   font-style: normal;
 }
 .card .datatag {
-  margin: -6px 0 14px;
-  color: var(--ink-dim);
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  margin: -2px 0 15px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+/* small chip of the section's data-colour ramp; background set from RAMPS in app.js */
+.card .datatag .swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex: 0 0 auto;
 }
 .about-body .snapshot-note {
-  color: var(--ink-dim);
+  color: var(--muted);
   font-size: 13px;
   line-height: 1.55;
   margin: 10px 0 0;
 }
 .about-body .snapshot-note strong {
-  color: #dbe7f3;
+  color: var(--ink);
 }
 
 .meta {
   margin: 16px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--border); /* editorial divider: body above, evidence below */
   display: grid;
   gap: 12px;
+}
+/* one-line snapshot caveat — editorial, not a methodology box */
+.card .snap {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.5;
 }
 .meta div {
   display: grid;
@@ -312,14 +812,15 @@ body {
 .meta dt {
   margin: 0;
   color: var(--accent);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
 }
 .meta dd {
   margin: 0;
-  color: var(--ink-dim);
+  color: var(--muted);
   font-size: 13.5px;
   line-height: 1.5;
 }
@@ -330,16 +831,17 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: var(--ink-dim);
-  font-size: 12px;
-  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 .scroll-cue .arrow {
-  width: 14px;
-  height: 14px;
-  border-right: 2px solid var(--accent);
-  border-bottom: 2px solid var(--accent);
+  width: 10px;
+  height: 10px;
+  border-right: 1.5px solid var(--accent);
+  border-bottom: 1.5px solid var(--accent);
   transform: rotate(45deg);
   animation: bob 1.6s ease-in-out infinite;
 }
@@ -350,7 +852,7 @@ body {
     opacity: 0.5;
   }
   50% {
-    transform: rotate(45deg) translate(3px, 3px);
+    transform: rotate(45deg) translate(2px, 2px);
     opacity: 1;
   }
 }
@@ -358,7 +860,7 @@ body {
 /* about panel */
 .about {
   margin-top: 18px;
-  border-top: 1px solid var(--glass-brd);
+  border-top: 1px solid var(--border);
   padding-top: 12px;
 }
 .about summary {
@@ -369,7 +871,7 @@ body {
 }
 .about-body p {
   font-size: 13px;
-  color: var(--ink-dim);
+  color: var(--muted);
   line-height: 1.55;
   margin: 10px 0 0;
 }
@@ -381,11 +883,68 @@ body {
   opacity: 0.8;
 }
 
+/* ---- Methods chapter ---- */
+/* A field-notebook interlude. Only slightly wider than a chapter card — the controlled reading
+   measure is preserved; the extra information is handled with structured rows + dividers, not
+   longer lines. */
+.card--methods {
+  width: 440px;
+}
+.card--methods .method-lede {
+  color: var(--ink-2);
+  font-size: 15.5px;
+  line-height: 1.6;
+  margin: 0 0 6px;
+}
+#methods-body {
+  margin: 4px 0 2px;
+}
+.method-row {
+  padding: 13px 0;
+  border-top: 1px solid var(--border);
+}
+.method-row:first-child {
+  border-top: 0;
+}
+.method-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.method-name {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+}
+.method-spec {
+  margin: 5px 0 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+.method-note {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.method-caveat {
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
 /* vessel popup (Leaflet) */
 .leaflet-popup-content-wrapper {
-  background: #0b1622;
+  background: var(--panel);
   color: var(--ink);
-  border: 1px solid var(--glass-brd);
+  border: 1px solid var(--border);
   border-radius: 10px;
 }
 .leaflet-popup-content {
@@ -394,76 +953,249 @@ body {
   margin: 10px 12px;
 }
 .leaflet-popup-tip {
-  background: #0b1622;
-  border: 1px solid var(--glass-brd);
+  background: var(--panel);
+  border: 1px solid var(--border);
 }
 .leaflet-popup-close-button {
-  color: var(--ink-dim) !important;
+  color: var(--muted) !important;
 }
 .vessel-pop strong {
   color: var(--accent);
 }
 .vessel-pop .pop-note {
-  color: var(--ink-dim);
+  color: var(--muted);
   font-size: 11px;
 }
 
-/* click-to-inspect popup */
-.inspect-pop {
+/* click-to-inspect editorial readout (inside the Leaflet popup) — reads like a field
+   measurement: big mono value + unit, plain label, the coordinate you read. */
+.inspect-readout {
+  line-height: 1.4;
+}
+.inspect-readout .ro-row + .ro-row {
+  margin-top: 9px;
+  border-top: 1px solid var(--border);
+  padding-top: 9px;
+}
+.inspect-readout .ro-big {
+  font-family: var(--mono);
+  font-size: 24px;
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.inspect-readout .ro-unit {
+  font-size: 14px;
+  color: var(--muted);
+  margin-left: 3px;
+}
+.inspect-readout .ro-lab {
   font-size: 13px;
-  line-height: 1.5;
+  color: var(--ink-2);
+  margin-top: 3px;
 }
-.inspect-pop .inspect-row + .inspect-row {
+.inspect-readout .ro-none {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.inspect-readout .ro-sub {
+  display: grid;
+  gap: 2px;
   margin-top: 8px;
-  border-top: 1px solid var(--glass-brd);
   padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.03em;
+  color: var(--muted);
 }
-.inspect-pop strong {
+.inspect-readout .ro-co {
   color: var(--accent);
 }
-.inspect-pop .pop-sub {
-  color: var(--ink-dim);
-  font-size: 11px;
+
+/* The card grab-handle and the mobile inspector sheet exist only on mobile (mobile.js injects
+   the handle into every card; inspect.js fills the sheet). Hidden on desktop. */
+.card-handle {
+  display: none;
 }
-.inspect-pop .pop-none {
-  color: var(--ink-dim);
+.inspect-sheet {
+  display: none;
 }
 
 /* ---- responsive / mobile ---- */
+/* Refine the fixed-map + bottom-sheet pattern (engine untouched). The map stays the fixed,
+   full-screen "sticky" layer; each story card becomes a bottom sheet that updates as the
+   invisible 100vh steps scroll past. Explore mode minimises the sheet to a handle so the map
+   can be panned/read. All rules here are ≤760px, so desktop is unaffected. */
 @media (max-width: 760px) {
   :root {
     --card-w: 100%;
   }
+  /* steps are now transparent scroll-triggers; the card is positioned by fixed, below */
   .step {
-    align-items: flex-end;
-    padding: 0 12px 14px;
+    padding: 0;
     min-height: 100vh;
   }
-  .step--hero {
-    align-items: flex-end;
-  }
+
+  /* --- bottom-sheet card --- */
   .card {
-    padding: 18px 18px 18px;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    /* small-viewport units + fallback so browser chrome can't make it full-screen;
+       keeps ≥ ~38vh of map visible in normal mode */
+    max-height: min(62vh, 62svh);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--r-4) var(--r-4) 0 0;
+    border-bottom: 0;
+    padding: 0 18px calc(18px + env(safe-area-inset-bottom));
+    box-shadow: 0 -10px 34px rgba(0, 0, 0, 0.22);
+    /* Only the active sheet shows/interacts. Use visibility (not just opacity) so the
+       fixed-stacked cards don't all pile up when reduced-motion forces opacity:1. */
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(16px);
   }
-  .card--hero {
+  .step.is-active .card {
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+  .card--hero,
+  .card--methods {
     width: 100%;
   }
+  /* Explore (peek): the active sheet slides down to reveal the full map, leaving the handle. */
+  body.map-explore .step.is-active .card {
+    transform: translateY(calc(100% - 46px));
+  }
+
+  /* sticky grab handle (injected into each card by mobile.js) — the Explore/close control */
+  .card-handle {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    width: calc(100% + 36px);
+    margin: 0 -18px 8px;
+    padding: 9px 0;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+    cursor: pointer;
+  }
+  .card-handle-grip {
+    width: 36px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--border-2);
+  }
+  .card-handle-move {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+  }
+  .card-handle-move .icon {
+    width: 13px;
+    height: 13px;
+  }
+  .card-handle-label {
+    font: 500 10.5px/1 var(--mono);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .card-handle:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: -2px;
+  }
+
   .meta div {
     grid-template-columns: 1fr;
     gap: 2px;
   }
-  .legend-panel {
-    top: auto;
-    bottom: 14px;
-    right: 14px;
-    left: 14px;
-    width: auto;
+
+  /* The desktop "Click the map to read a value" hint is redundant on mobile (the flow is
+     Explore → tap → reading sheet) and would overlap the bottom sheet — hide it. */
+  .inspect-hint {
+    display: none;
   }
+
+  /* --- legend: compact panel top-right (below the theme toggle), no bottom collision --- */
+  .legend-panel {
+    top: 60px;
+    right: 12px;
+    left: auto;
+    bottom: auto;
+    width: 208px;
+    max-width: 62vw;
+  }
+  .legend {
+    /* keep the expanded panel within the map peek so it can't cover the card or, in
+       explore+read, the reading sheet; scrolls internally if a legend is taller */
+    max-height: 32vh;
+    overflow-y: auto;
+  }
+
+  /* --- chrome: basemap top-left, theme top-right (its own rule), legend under it --- */
   .basemap-toggle {
     top: 12px;
     left: 12px;
-    right: 12px;
-    justify-content: center;
+    right: auto;
+    max-width: calc(100vw - 68px); /* leave room for the theme toggle */
+    overflow: hidden;
+  }
+
+  /* --- inspector reading as a bottom sheet (instead of the anchored popup) --- */
+  .inspect-sheet {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 7; /* above the story sheet */
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    border-radius: var(--r-4) var(--r-4) 0 0;
+    box-shadow: 0 -10px 34px rgba(0, 0, 0, 0.28);
+    padding: 16px 18px calc(16px + env(safe-area-inset-bottom));
+    transform: translateY(110%);
+    transition: transform var(--dur-component) var(--ease-standard);
+  }
+  .inspect-sheet.is-shown {
+    transform: translateY(0);
+  }
+  .inspect-sheet-close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 20px;
+    line-height: 1;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+  .inspect-sheet-close:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .inspect-sheet {
+      transition: none;
+    }
+    body.map-explore .step.is-active .card {
+      transition: none;
+    }
   }
 }
 
@@ -475,5 +1207,134 @@ body {
   }
   .scroll-cue .arrow {
     animation: none;
+  }
+}
+
+/* ---- skip link (first focusable; visible only when focused) ---- */
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 20;
+  transform: translateY(-150%);
+  background: var(--panel);
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: var(--r-2);
+  box-shadow: var(--shadow);
+  padding: 10px 14px;
+  font: 600 13px/1 var(--sans);
+  text-decoration: none;
+}
+.skip-link:focus {
+  transform: none;
+}
+#story:focus {
+  outline: none; /* a skip target, not an interactive control */
+}
+/* focus-visible for any interactive controls not already covered */
+.about summary:focus-visible,
+.legend-collapse:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ---- print: turn the interactive piece into a clean linear field report ---- */
+@media print {
+  /* Force print-safe tokens regardless of the on-screen theme (light or dark). */
+  :root,
+  :root[data-theme='light'],
+  :root[data-theme='dark'] {
+    --paper: #fff;
+    --panel: #fff;
+    --panel-2: #f5f5f5;
+    --ink: #111;
+    --ink-2: #333;
+    --muted: #555;
+    --border: #ccc;
+    --border-2: #bbb;
+    --accent: #000;
+    --accent-ink: #fff;
+    --good: #1a6b3f;
+    --illustration: #8a5a10;
+    --critical: #a2322b;
+    --focus: #000;
+    --shadow: none;
+  }
+  #map,
+  #map-wash,
+  .basemap-toggle,
+  .theme-toggle,
+  .legend-panel,
+  .inspect-hint,
+  #inspect-sheet,
+  .card-handle,
+  .scroll-cue,
+  .skip-link,
+  .leaflet-control-container,
+  .leaflet-control-attribution {
+    display: none !important;
+  }
+  html,
+  body {
+    background: #fff;
+    color: #000;
+  }
+  .story {
+    position: static;
+  }
+  .step {
+    min-height: auto;
+    display: block;
+    padding: 0;
+    break-inside: avoid;
+  }
+  /* cards linearise into a stacked document (all visible, no fixed/animated state) */
+  .card {
+    position: static;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: none !important;
+    width: auto;
+    max-height: none;
+    overflow: visible;
+    margin: 0 0 18px;
+    border: 1px solid var(--border);
+    box-shadow: none;
+    break-inside: avoid;
+  }
+  a {
+    text-decoration: underline;
+  }
+  /* print the full provenance: reveal the collapsed <details> content */
+  details > *:not(summary) {
+    display: block !important;
+  }
+  details summary {
+    font-weight: 600;
+  }
+}
+
+/* ---- forced-colors (Windows High Contrast etc.): nothing must vanish ---- */
+@media (forced-colors: active) {
+  .card,
+  .legend-panel,
+  .basemap-toggle,
+  .theme-toggle,
+  .inspect-hint,
+  #inspect-sheet,
+  .card-handle {
+    border: 1px solid CanvasText;
+  }
+  :focus-visible,
+  .skip-link:focus {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+  /* the active ground isn't distinguishable by fill in forced-colors — give it an outline
+     (aria-pressed already conveys it to assistive tech; badges stay distinct by their text) */
+  .basemap-btn[aria-pressed='true'] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
   }
 }

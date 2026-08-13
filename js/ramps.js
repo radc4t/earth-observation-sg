@@ -26,3 +26,12 @@ export const RAMPS = {
     [1.0, '#fcffa4'],
   ],
 };
+
+// Presentation helper (browser only): build a CSS `linear-gradient(...)` from a ramp's
+// [position, hex] stops, so the legend gradients and the story-card swatch derive from the
+// same source as the raster LUTs. Written to not match the Python parser's pair/header
+// regexes above, so it never interferes with load_ramps().
+export function rampGradientCss(stops, angle = '90deg') {
+  const parts = stops.map((s) => `${s[1]} ${(s[0] * 100).toFixed(1)}%`).join(', ');
+  return `linear-gradient(${angle}, ${parts})`;
+}

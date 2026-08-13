@@ -155,24 +155,46 @@ function laneLatLngs(spine) {
   return spine.map(([lng, lat]) => [lat, lng]);
 }
 
+// Draw each lane as a haloed dashed line: a dark casing (reads on the light grey canvas)
+// under a light core (reads on the dark satellite imagery), so the lanes stay visible on
+// whichever basemap the reader chooses. Both strokes share the dash pattern so the dashes
+// line up. Replaces the lanes currently in `group`.
+function drawLanes(group, spines) {
+  group.clearLayers();
+  spines.forEach((s) => {
+    const pts = laneLatLngs(s);
+    L.polyline(pts, {
+      color: '#0b1622',
+      weight: 3.4,
+      opacity: 0.4,
+      dashArray: '2 6',
+      interactive: false,
+    }).addTo(group);
+    L.polyline(pts, {
+      color: '#cfeaf6',
+      weight: 1.3,
+      opacity: 0.85,
+      dashArray: '2 6',
+      interactive: false,
+    }).addTo(group);
+  });
+}
+
 export const maritimeLayer = {
   id: 'vessels',
   key: 'maritime',
   sourceId: 'vessels-source',
+  // The raster overlays fade in, so the scrolly coordinator "develops them in" on the glide's
+  // tail. This is a VECTOR group with no fade — it should travel WITH the camera instead, mounted
+  // before the flyTo (then carried by the pane transform, its motion frozen until moveend). This
+  // one declarative flag tells the coordinator that; all transition timing stays in scrolly.js.
+  deferReveal: false,
 
   add(map) {
     if (laneGroup) return;
     laneMeta = LANE_SPINES.map(measureLane);
     laneGroup = L.layerGroup();
-    LANE_SPINES.forEach((s) => {
-      L.polyline(laneLatLngs(s), {
-        color: '#7dd3fc',
-        weight: 1.2,
-        opacity: 0.35,
-        dashArray: '2 6',
-        interactive: false,
-      }).addTo(laneGroup);
-    });
+    drawLanes(laneGroup, LANE_SPINES);
     vesselGroup = L.layerGroup();
     buildVessels(map, 25);
 
@@ -202,8 +224,9 @@ export const maritimeLayer = {
 
   start() {
     if (running) return;
-    // Note: the vessel drift is a subtle, continuous ambient animation, so (unlike the
-    // camera flyTo, which reduced-motion turns into an instant jump) it always runs.
+    // Respect reduced motion: the vessels still render (spread along the lanes) but don't
+    // drift — a static illustration rather than a continuous ambient animation.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     running = true;
     let last = performance.now();
     const tick = (now) => {
@@ -244,16 +267,7 @@ export const maritimeLayer = {
     if (!lines.length) return;
     LANE_SPINES = lines.map((f) => f.geometry.coordinates);
     laneMeta = LANE_SPINES.map(measureLane);
-    laneGroup.clearLayers();
-    LANE_SPINES.forEach((s) => {
-      L.polyline(laneLatLngs(s), {
-        color: '#7dd3fc',
-        weight: 1.2,
-        opacity: 0.35,
-        dashArray: '2 6',
-        interactive: false,
-      }).addTo(laneGroup);
-    });
+    drawLanes(laneGroup, LANE_SPINES);
     vesselGroup.clearLayers();
     vessels = [];
     lines.forEach((f, i) => {

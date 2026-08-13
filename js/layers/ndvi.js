@@ -18,7 +18,7 @@ const BOUNDS = [
   [1.475, 104.04],
 ];
 
-const ACTIVE_OPACITY = 0.82;
+const ACTIVE_OPACITY = 0.7; // let the geography breathe through the data (M7 dial)
 
 const LUT = buildLut(RAMPS.viridis);
 
@@ -53,7 +53,8 @@ export const ndviLayer = {
       interactive: false,
       className: 'data-overlay',
     }).addTo(map);
-    if (this._layer.getElement()) this._layer.getElement().style.transition = 'opacity .5s ease';
+    // The opacity fade is defined in CSS on `.data-overlay` (so `prefers-reduced-motion` can turn
+    // it off — an inline transition here couldn't be overridden by the media query).
   },
 
   setVisible(map, visible) {

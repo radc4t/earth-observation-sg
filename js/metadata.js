@@ -19,6 +19,9 @@ export const LAYER_META = {
     sourceResolution: '10 m',
     displayResolution: '~16 m/px',
     processing: ['NDVI = (B08 − B04)/(B08 + B04)', 'cloud & water masked (SCL)'],
+    // Short editorial "how it was made" line for the Methods chapter (the exact band formula
+    // lives in `processing` above + docs/swap-instructions.md).
+    methodNote: 'NDVI from red + near-infrared reflectance; cloud & water masked.',
     rampEnds: ['Bare / built', 'Dense canopy'],
     // NDVI value range mapped onto the ramp — must match NDVI_LO / NDVI_HI in
     // build_real_ndvi.py so click-to-inspect reports the right value.
@@ -38,37 +41,49 @@ export const LAYER_META = {
     tminC: 33,
     tmaxC: 48,
     processing: ['ST_B10 → °C', 'cloud, shadow & water masked (QA_PIXEL + QA_RADSAT)'],
+    methodNote: 'Thermal band converted to °C; cloud, shadow & water masked.',
     rampEnds: ['Cooler', 'Hotter'],
   },
   maritime: {
     real: false,
     title: 'Vessel traffic',
-    badge: 'Simulation',
+    // Classification label (shown in the legend badge + About panel): the two-category
+    // vocabulary is REAL / ILLUSTRATION. The "simulated" specifics live in illustrationNote.
+    badge: 'Illustration',
     illustrationNote: 'Simulated tracks — not live AIS',
     realSource: 'AIS transponder data',
   },
 };
 
-// Build the "About the data" panel body straight from LAYER_META, so the per-layer facts
-// (source, date, resolution) have a SINGLE source of truth shared with the legends — the
-// About panel can never drift from them. Order follows the story.
-export function aboutDataHTML() {
+// Build the Methods-chapter per-layer rows straight from LAYER_META, so the visible provenance
+// (source, date, resolution, real-vs-illustrative) has a SINGLE source of truth shared with the
+// legends and cards — it can never drift. Data-driven, but written for a reader: one classified
+// row per layer + a single honest caveat, not a metadata dump. The deeper technical detail
+// (band formulas, credits, basemap sources, swap docs) lives in the "Full provenance" details
+// in index.html. Order follows the story.
+export function methodsHTML() {
   const order = ['ndvi', 'thermal', 'maritime'];
-  return order
+  const rows = order
     .map((k) => {
       const m = LAYER_META[k];
-      if (m.real) {
-        const proc = m.processing ? ` ${m.processing.join('; ')}.` : '';
-        const units = m.units ? `, in ${m.units}` : '';
-        return (
-          `<p><strong>${m.title}</strong> — real: ${m.source} · ${m.date}${units}. ` +
-          `${m.sourceResolution} source, ${m.displayResolution} display grid.${proc}</p>`
-        );
-      }
+      // The spec line describes each layer plainly — a real layer names its source/date/resolution;
+      // the illustrative one says "Simulated tracks" up front. No "real vs illustration" labelling.
+      const spec = m.real
+        ? `${m.source} · ${m.date} · ${m.sourceResolution} source`
+        : `Simulated tracks · from ${m.realSource}`;
+      const note = m.real ? m.methodNote : m.illustrationNote;
       return (
-        `<p><strong>${m.title}</strong> — ${m.badge.toLowerCase()}: ${m.illustrationNote}. ` +
-        `Wired to accept real data (source: ${m.realSource}) via a one-line swap.</p>`
+        `<div class="method-row">` +
+        `<div class="method-head"><span class="method-name">${m.title}</span></div>` +
+        `<p class="method-spec">${spec}</p>` +
+        `<p class="method-note">${note}</p>` +
+        `</div>`
       );
     })
     .join('');
+  return (
+    rows +
+    '<p class="method-caveat">Each layer is a single-date snapshot — not a time series — and the ' +
+    'three are separate acquisitions, not a same-day comparison.</p>'
+  );
 }
